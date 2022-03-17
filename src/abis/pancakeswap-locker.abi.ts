@@ -1,0 +1,16 @@
+export const PancakeSwapLockerABI = [
+  'function lockLPToken (address _lpToken, uint256 _amount, uint256 _unlock_date, address payable _withdrawer) public payable',
+  'function relockFrom (address _lpToken, uint256 _index, uint256 _lockID, uint256 _unlock_date, address withdrawer) public',
+  'function relock(address _lpToken, uint256 _index, uint256 _lockID, uint256 _unlock_date) external',
+  'function withdrawFrom(address _lpToken, uint256 _index, uint256 _lockID, uint256 _amount, address from, address to) public',
+  'function withdraw(address _lpToken, uint256 _index, uint256 _lockID, uint256 _amount) external',
+  'function splitLock (address _lpToken, uint256 _index, uint256 _lockID, uint256 _amount) public payable',
+  'function transferLockOwnership (address _lpToken, uint256 _index, uint256 _lockID, address payable _newOwner) public',
+  'function getNumLocksForToken (address _lpToken) external view returns (uint256)',
+  'function getNumLockedTokens () external view returns (uint256)',
+  'function getLockedTokenAtIndex (uint256 _index) external view returns (address)',
+  'function getUserNumLockedTokens (address _user) external view returns (uint256)',
+  'function getUserLockedTokenAtIndex (address _user, uint256 _index) external view returns (address)',
+  'function getUserNumLocksForToken (address _user, address _lpToken) external view returns (uint256)',
+  'function getUserLockForTokenAtIndex (address _user, address _lpToken, uint256 _index) external view returns (uint256, uint256, uint256, uint256, uint256, address)',
+];

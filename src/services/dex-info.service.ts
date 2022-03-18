@@ -1,14 +1,16 @@
 import Logger from '../utils/logger';
-import { Config } from '../config';
-import { EvmFactory } from './evm.factory';
-import { DexInfoPoolInfo } from './interfaces';
-import { BigDecimal } from '../utils/bigdecimal';
-import { gql, request } from 'graphql-request';
+import {Config} from '../config';
+import {EvmFactory} from './evm.factory';
+import {DexInfoPoolInfo} from './interfaces';
+import {BigDecimal} from '../utils/bigdecimal';
+import {gql, request} from 'graphql-request';
 
 /**
  * This util class is intended to contains all required function to
  * interact with Uniswap dex protocol clones info subgraph API
- * See: https://pancakeswap.finance/info/pool/0x9428d7f0660b1ec8e42930c08443880f8f663875
+ * See:
+ * https://pancakeswap.finance/info/pool/0x9428d7f0660b1ec8e42930c08443880f8f663875
+ * https://pancakeswap.finance/info/token/0x83d8Ea5A4650B68Cd2b57846783d86DF940F7458
  *
  */
 export class DexInfoService {
@@ -21,13 +23,15 @@ export class DexInfoService {
     this.factory = new EvmFactory(config);
   }
 
-  public async getPairInfo(pairAddress: string): Promise<DexInfoPoolInfo> {
+  public async getPairInfo(pairAddress: string, limit = 7, offset = 0): Promise<DexInfoPoolInfo> {
     const query = gql`
       {
-        pairDayDatas(first: 7, skip: 0, where: {pairAddress: "${pairAddress}"}, orderBy: date, orderDirection: desc) {
+        pairDayDatas(first: ${limit}, skip: ${offset}, where: {pairAddress: "${pairAddress}"}, orderBy: date, orderDirection: desc) {
           date
           dailyVolumeUSD
           reserveUSD
+          reserve0
+          reserve1
         }
       }
     `;
@@ -35,10 +39,23 @@ export class DexInfoService {
     const response = await request(this.config.dexSubgraphUrl, query);
 
     const data = response.pairDayDatas.map((v: any) => {
-      return { reserveUSD: new BigDecimal(v.reserveUSD), volumeUSD: new BigDecimal(v.dailyVolumeUSD) };
+      const reserve0 = new BigDecimal(v.reserve0);
+      const reserve1 = new BigDecimal(v.reserve1);
+      const reserveUSD = new BigDecimal(v.reserveUSD);
+      const price = reserve1.div(reserve0);
+      const priceUSD = reserveUSD.div(2).div(reserve1).mul(price);
+      return {
+        reserve0,
+        reserve1,
+        price,
+        priceUSD,
+        reserveUSD,
+        volumeUSD: new BigDecimal(v.dailyVolumeUSD)
+      };
     });
-    const weeklySumVolumeUSD = data.reduce((a: BigDecimal, c: any) => a.plus(c.volumeUSD), new BigDecimal(0));
-    const weeklyAvgReserveUSD = data.reduce((a: BigDecimal, c: any) => a.plus(c.reserveUSD), new BigDecimal(0)).div(data.length);
+    const weeklyData = data.slice(0, 7);
+    const weeklySumVolumeUSD = weeklyData.reduce((a: BigDecimal, c: any) => a.plus(c.volumeUSD), new BigDecimal(0));
+    const weeklyAvgReserveUSD = weeklyData.reduce((a: BigDecimal, c: any) => a.plus(c.reserveUSD), new BigDecimal(0)).div(data.length);
 
     const weeklyFeeUSD = weeklySumVolumeUSD.mul(0.17 / 100); //0.17+0.8 DEX fees
     const yearlyEstimatedFeeUSD = weeklyFeeUSD.mul(365 / 7);

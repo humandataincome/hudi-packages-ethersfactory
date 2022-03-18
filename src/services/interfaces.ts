@@ -66,5 +66,14 @@ export type DexInfoPoolInfo = {
   volume24hUSD: BigDecimal,
   volume7dUSD: BigDecimal,
   annualPercentageRate7d: BigDecimal,
-  dailyInfo: { reserveUSD: BigDecimal, volumeUSD: BigDecimal }[]
+  dailyInfo: DexInfoTickPoolInfo[]
+}
+
+export type DexInfoTickPoolInfo = {
+  reserve0: BigDecimal,
+  reserve1: BigDecimal,
+  price: BigDecimal,
+  priceUSD: BigDecimal,
+  reserveUSD: BigDecimal,
+  volumeUSD: BigDecimal
 }

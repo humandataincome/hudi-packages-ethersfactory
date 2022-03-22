@@ -31,3 +31,5 @@ build/
 # Custom
 
 #.env
+
+package-lock.json

@@ -12,6 +12,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
+      - run: npm i
       - run: npm ci
 
   publish-npm:
@@ -23,6 +24,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
+      - run: npm i
       - run: npm ci
       - run: npm publish --access public
         env:

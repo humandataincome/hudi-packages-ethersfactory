@@ -3,7 +3,6 @@ import {EventEmitter} from "events";
 import {Config} from "../config";
 import {EvmFactory} from "./evm.factory";
 import {DexPairABI} from "../abis";
-import {TokenService} from "./token.service";
 import {BigDecimal} from "../utils/bigdecimal";
 
 export class LPTokenService {
@@ -19,10 +18,8 @@ export class LPTokenService {
   }
 
   async getReserves(lpTokenAddress: string) {
-    const tokenService = new TokenService(this.config);
-
-    const decimal = await tokenService.getDecimals(lpTokenAddress);
     const contract = this.factory.getContract(lpTokenAddress, DexPairABI);
+    const decimal = await contract.getDecimals(lpTokenAddress);
 
     const [ reserve0, reserve1, blockTimestampLast ] = await contract.getReserves();
 

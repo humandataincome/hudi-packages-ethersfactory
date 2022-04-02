@@ -59,7 +59,7 @@ export const BSCTEST_CONFIG: Config = {
     },
     proxyUtils: '0x7ba8b8286359e10C4537A76006bEbf0B8Ae0a6A6',
     dexRouter: '0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3',
-    miniLiquidityProvider: '0x771714446680599F3914c6494e75BFdA13F84d05',
+    miniLiquidityProvider: '0x22e476722Bbb4414da8A6f80852a89fC8eEf63FD',
     pancakeSwapLocker: '0xDea76607d9ba4FdFA04eeE51f4360fEE2B38ed0a',
     prediction: '',
   },

@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
 import Logger from '../utils/logger';
 import { Config } from '../config';
 import { ethers } from 'ethers';
-import {Transaction} from "@ethersproject/transactions/src.ts";
+import {Transaction} from "@ethersproject/transactions";
 
 /**
  * This util class is intended to contains all required function to

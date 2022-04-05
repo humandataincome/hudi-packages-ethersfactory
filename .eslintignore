@@ -3,3 +3,4 @@
 build/*
 !build/index.js
 node_modules/*
+test/*

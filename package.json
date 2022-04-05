@@ -1,6 +1,6 @@
 {
   "name": "@humandataincome/ethersfactory",
-  "version": "1.3.8",
+  "version": "1.3.9",
   "description": "A comprehensive collection of useful tools to interact with DeFi apps",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -22,7 +22,7 @@
     "prebuild": "npm run lint",
     "build": "tsc -p tsconfig.json",
     "build:watch": "tsc -w -p tsconfig.json",
-    "lint": "eslint ./src",
+    "lint": "eslint . --ext .ts --fix",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "test:generic": "ts-node test/generic.test.ts",

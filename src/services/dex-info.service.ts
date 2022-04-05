@@ -1,7 +1,7 @@
 import Logger from '../utils/logger';
 import {Config} from '../config';
 import {EvmFactory} from './evm.factory';
-import {DexInfoPoolInfo} from './interfaces';
+import {DexInfoPairDayDatas, DexInfoPoolInfo} from './interfaces';
 import {BigDecimal} from '../utils/bigdecimal';
 import {gql, request} from 'graphql-request';
 
@@ -36,9 +36,9 @@ export class DexInfoService {
       }
     `;
 
-    const response = await request(this.config.dexSubgraphUrl, query);
+    const response: { pairDayDatas: DexInfoPairDayDatas[] } = await request(this.config.dexSubgraphUrl, query);
 
-    const data = response.pairDayDatas.map((v: any) => {
+    const data = response.pairDayDatas.map((v: { date: unknown; dailyVolumeUSD: string; reserveUSD: string; reserve0: string; reserve1: string }) => {
       const reserve0 = new BigDecimal(v.reserve0);
       const reserve1 = new BigDecimal(v.reserve1);
       const reserveUSD = new BigDecimal(v.reserveUSD);
@@ -54,8 +54,8 @@ export class DexInfoService {
       };
     });
     const weeklyData = data.slice(0, 7);
-    const weeklySumVolumeUSD = weeklyData.reduce((a: BigDecimal, c: any) => a.plus(c.volumeUSD), new BigDecimal(0));
-    const weeklyAvgReserveUSD = weeklyData.reduce((a: BigDecimal, c: any) => a.plus(c.reserveUSD), new BigDecimal(0)).div(data.length);
+    const weeklySumVolumeUSD = weeklyData.reduce((a: BigDecimal, c) => a.plus(c.volumeUSD), new BigDecimal(0));
+    const weeklyAvgReserveUSD = weeklyData.reduce((a: BigDecimal, c) => a.plus(c.reserveUSD), new BigDecimal(0)).div(data.length);
 
     const weeklyFeeUSD = weeklySumVolumeUSD.mul(0.17 / 100); //0.17+0.8 DEX fees
     const yearlyEstimatedFeeUSD = weeklyFeeUSD.mul(365 / 7);

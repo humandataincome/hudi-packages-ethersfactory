@@ -1,9 +1,10 @@
-import { BlockWithTransactions } from '@ethersproject/abstract-provider';
+import {BlockWithTransactions} from '@ethersproject/abstract-provider';
 import { EvmFactory } from './evm.factory';
 import { EventEmitter } from 'events';
 import Logger from '../utils/logger';
 import { Config } from '../config';
 import { ethers } from 'ethers';
+import {Transaction} from "@ethersproject/transactions/src.ts";
 
 /**
  * This util class is intended to contains all required function to
@@ -19,7 +20,7 @@ export class EvmService {
     this.factory = new EvmFactory(config);
   }
 
-  public static decodeTransaction(transaction: any, contractABI: string[]): Record<string, unknown> {
+  public static decodeTransaction(transaction: Transaction, contractABI: string[]): Record<string, unknown> {
     const inter = new ethers.utils.Interface(contractABI);
     const decodedInput = inter.parseTransaction({
       data: transaction.data ? transaction.data : '',

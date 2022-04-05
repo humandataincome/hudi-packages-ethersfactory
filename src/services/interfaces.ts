@@ -77,3 +77,11 @@ export type DexInfoTickPoolInfo = {
   reserveUSD: BigDecimal,
   volumeUSD: BigDecimal
 }
+
+export interface DexInfoPairDayDatas {
+  date: unknown;
+  dailyVolumeUSD: string;
+  reserveUSD: string;
+  reserve0: string;
+  reserve1: string;
+}

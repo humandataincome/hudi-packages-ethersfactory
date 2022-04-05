@@ -22,7 +22,7 @@
     "prebuild": "npm run lint",
     "build": "tsc -p tsconfig.json",
     "build:watch": "tsc -w -p tsconfig.json",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint ./src",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "test:generic": "ts-node test/generic.test.ts",

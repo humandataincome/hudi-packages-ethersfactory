@@ -39,15 +39,15 @@ export class MiniLiquidityProviderService {
     const lpTokenAddress = await mlpContract.getLpTokenAddress();
     const lpToken = this.factory.getContract(this.config.addresses.tokens.CAKELP, ERC20ABI).connect(signer);
     this.logger.log('debug', `LPTOKEN ADDRESS: ${lpTokenAddress}`);
-    
+
     // CALCULATE THE MIN AMOUNT
     this.logger.log('debug', `GET THE MIN AMOUNTOUT`);
     const amountToSwap = amountToAdd.div(2);
-    
-    let amounts = await routerContract.getAmountsOut(amountToSwap, [this.config.addresses.tokens.WETH, this.config.addresses.tokens.HUDI]);
+
+    const amounts = await routerContract.getAmountsOut(amountToSwap, [this.config.addresses.tokens.WETH, this.config.addresses.tokens.HUDI]);
     this.logger.log('debug', `AMOUNTS: ${amounts.map((x:BigNumber) => x.toString())}`);
-    
-    let amountOutMin = amounts[1];
+
+    const amountOutMin = amounts[1];
     this.logger.log('debug', `MIN AMOUNT OUT IS: ${amountOutMin.toString()}`);
 
     const deadline = Math.floor(Date.now() / 1000) + (60*10);//10 minutes

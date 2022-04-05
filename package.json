@@ -28,6 +28,7 @@
     "test:generic": "ts-node test/generic.test.ts",
     "test:prediction": "ts-node test/prediction.test.ts",
     "test:omniswap": "ts-node test/omniswap.test.ts",
+    "test:mlp": "ts-node test/mlp.test.ts",
     "prepublish": "npm run build"
   },
   "devDependencies": {

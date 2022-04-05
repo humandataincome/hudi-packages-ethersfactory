@@ -21,7 +21,7 @@ export class MiniLiquidityProviderService {
     // GET THE CONTRACT INSTANCES
     const signer = this.factory.getSigner(signerOrPrivateKey);
     const mlpContract = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI).connect(signer);
-    const result = await mlpContract.getLPTokensOut(amountToAdd);
+    const result = await mlpContract.getLPTokensOut(amountToAdd.toBigNumber());
     this.logger.log('debug', `RESULT: ${result.toString()}`);
     return result;
   }

@@ -17,13 +17,13 @@ export class MiniLiquidityProviderService {
     this.factory = new EvmFactory(config);
   }
 
-  async getLPTokensOut(signerOrPrivateKey: Signer | string, amountToAdd: BigDecimal): Promise<BigNumber> {
+  async getLPTokensOut(signerOrPrivateKey: Signer | string, amountToAdd: BigDecimal): Promise<BigDecimal> {
     // GET THE CONTRACT INSTANCES
     const signer = this.factory.getSigner(signerOrPrivateKey);
     const mlpContract = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI).connect(signer);
     const result = await mlpContract.getLPTokensOut(amountToAdd.toBigNumber(18));
     this.logger.log('debug', `RESULT: ${result.toString()}`);
-    return result;
+    return BigDecimal.fromBigNumber(result, 18);
   }
 
   async addLiquidity(signerOrPrivateKey: Signer | string, amountToAdd: BigDecimal): Promise<boolean> {

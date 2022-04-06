@@ -6,6 +6,7 @@ export const BSC_CONFIG: Config = {
     tokens: {
       ETH: '0x0000000000000000000000000000000000000000',
       WETH: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+      WBNB: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
       HUDI: '0x83d8Ea5A4650B68Cd2b57846783d86DF940F7458',
       USDT: '0x55d398326f99059fF775485246999027B3197955',
       BUSD: '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
@@ -29,8 +30,9 @@ export const ETH_CONFIG1 = (jsonRpcApiKey?: string): Config => {
       tokens: {
         ETH: '0x0000000000000000000000000000000000000000',
         WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-        HUDI: '',
         USDT: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+        WBNB: '',
+        HUDI: '',
         BUSD: '',
         CAKELP: '',
       },
@@ -52,6 +54,7 @@ export const BSCTEST_CONFIG: Config = {
     tokens: {
       ETH: '0x0000000000000000000000000000000000000000',
       WETH: '',
+      WBNB: '0x094616f0bdfb0b526bd735bf66eca0ad254ca81f',
       HUDI: '0x220fc122CcB27cA8B742a6520237612C1d7D01aB',
       USDT: '',
       BUSD: '',

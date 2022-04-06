@@ -4,6 +4,7 @@ export interface Config {
   addresses: {
     tokens: {
       ETH: string, // This is our convention, 0x0000000000000000000000000000000000000000
+      WBNB: string;
       WETH: string,
       HUDI: string,
       USDT: string,

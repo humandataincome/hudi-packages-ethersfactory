@@ -1,13 +1,13 @@
 import * as ethers from 'ethers';
-import { ContractFactory } from 'ethers';
-import { DexCandle, DexPoolInfo, DexSwapEvent } from './interfaces';
-import { Config } from '../config';
-import { DexFactoryABI, DexPairABI, DexRouter02ABI, ERC20ABI } from '../abis';
-import { BigDecimal } from '../utils/bigdecimal';
-import { EvmFactory } from './evm.factory';
-import { Signer } from '@ethersproject/abstract-signer';
+import {ContractFactory} from 'ethers';
+import {DexCandle, DexPoolInfo, DexSwapEvent} from './interfaces';
+import {Config} from '../config';
+import {DexFactoryABI, DexPairABI, DexRouter02ABI, ERC20ABI} from '../abis';
+import {BigDecimal} from '../utils/bigdecimal';
+import {EvmFactory} from './evm.factory';
+import {Signer} from '@ethersproject/abstract-signer';
 import Logger from '../utils/logger';
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 
 /**
  * This util class is intended to contains all required function to
@@ -58,7 +58,7 @@ export class DexService {
       if (!currentCandle || currentCandle.t !== t - t % duration) {
         if (currentCandle)
           closeCandleListener(currentCandle);
-        currentCandle = { t: t - t % duration, o: p, h: p, l: p, c: p, v: v0, n: new BigDecimal(1), a: p };
+        currentCandle = {t: t - t % duration, o: p, h: p, l: p, c: p, v: v0, n: new BigDecimal(1), a: p};
         openCandleListener(currentCandle);
       } else {
         currentCandle.h = BigDecimal.max(currentCandle.h, p);
@@ -212,7 +212,7 @@ export class DexService {
         amountOutMin,
         pairAddress,
         toAddress ?? await signer.getAddress(),
-        deadline, { value: amountIn });
+        deadline, {value: amountIn});
       amountIn = amountIn.sub(gasLimit.mul(gasPrice));
       amountOut = [...(await dexRouterContract.getAmountsOut(amountIn, pairAddress))].pop();
       amountOutMin = BigDecimal.fromBigNumber(amountOut).mul(1 - slippage).toBigNumber();
@@ -222,7 +222,7 @@ export class DexService {
       amountOutMin,
       pairAddress,
       toAddress ?? await signer.getAddress(),
-      deadline, { value: amountIn });
+      deadline, {value: amountIn});
 
     return await tx.wait();
   }

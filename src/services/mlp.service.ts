@@ -1,5 +1,5 @@
 import { Config } from '../config';
-import { DexRouter02ABI, ERC20ABI, MiniLiquidityProviderABI} from '../abis';
+import {DexPairABI, DexRouter02ABI, ERC20ABI, MiniLiquidityProviderABI} from '../abis';
 import { BigDecimal } from '../utils/bigdecimal';
 import { Signer } from '@ethersproject/abstract-signer';
 import { EvmFactory } from './evm.factory';
@@ -26,6 +26,11 @@ export class MiniLiquidityProviderService {
     return BigDecimal.fromBigNumber(result, 18);
   }
 
+  async getLPTokenAddress(): Promise<string> {
+    const mlpContract = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI);
+    return await mlpContract.getLpTokenAddress();
+  }
+
   async addLiquidity(signerOrPrivateKey: Signer | string, amountToAdd: BigDecimal): Promise<boolean> {
     if (amountToAdd.lt(0)) {
       throw new Error('AMOUNT MUST BE GREATHER THAN 0');
@@ -44,7 +49,7 @@ export class MiniLiquidityProviderService {
     this.logger.log('debug', `GET THE MIN AMOUNTOUT`);
     const amountToSwap = amountToAdd.div(2);
 
-    const amounts = await routerContract.getAmountsOut(amountToSwap, [this.config.addresses.tokens.WETH, this.config.addresses.tokens.HUDI]);
+    const amounts = await routerContract.getAmountsOut(amountToSwap.toBigNumber(18), [this.config.addresses.tokens.WETH, this.config.addresses.tokens.HUDI]);
     this.logger.log('debug', `AMOUNTS: ${amounts.map((x:BigNumber) => x.toString())}`);
 
     const amountOutMin = amounts[1];
@@ -54,7 +59,7 @@ export class MiniLiquidityProviderService {
 
     try {
       this.logger.log('debug', `START TO ADD LIQUIDITY...`);
-      const tx = await mlpContract.addLiquidity(amountOutMin, deadline, {value: amountToAdd})
+      const tx = await mlpContract.addLiquidity(amountOutMin, deadline, {value: amountToAdd.toBigNumber(18)})
       await tx.wait()
       this.logger.log('debug', 'DONE');
       this.logger.log('debug', `USER LP TOKEN BALANCE: ${(await lpToken.balanceOf(signer.getAddress())).toString()}`);
@@ -65,17 +70,17 @@ export class MiniLiquidityProviderService {
     }
   }
 
-  async removeLiquidity(signerOrPrivateKey: Signer | string, amountToRemove: number, slippage: number): Promise<boolean> { // SLIPPAGE EXAMPLE: 0.99
+  async removeLiquidity(signerOrPrivateKey: Signer | string, amountToRemove: BigDecimal, slippage: number): Promise<boolean> { // SLIPPAGE EXAMPLE: 0.99
     // GET THE CONTRACT INSTANCES
     const signer = this.factory.getSigner(signerOrPrivateKey);
     const mlpContract = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI).connect(signer);
     const lpTokenAddress = await mlpContract.getLpTokenAddress();
-    const lpToken = this.factory.getContract(lpTokenAddress, ERC20ABI).connect(signer);
+    const lpToken = this.factory.getContract(lpTokenAddress, DexPairABI);
     this.logger.log('debug', `LPTOKEN ADDRESS: ${lpTokenAddress}`);
 
     this.logger.log('debug', `AMOUNT TO REMOVE IS: ${amountToRemove.toString()}`);
 
-    const userlpTokenAmount =  await lpToken.balanceOf(signer.getAddress());
+    const userlpTokenAmount: BigNumber =  await lpToken.balanceOf(signer.getAddress());
     this.logger.log('debug', `USER LIQUIDITY AMOUNT IS: ${userlpTokenAmount.toString()}`);
 
     // CALCULATE THE POOL SHARE IN THE LIQUIDITY
@@ -87,6 +92,7 @@ export class MiniLiquidityProviderService {
     const poolShare = amount1.div(amount2).toPrecision(18);
     this.logger.log('debug', `USER POOL SHARE IS: ${poolShare.toString()}`);
 
+    console.log(lpToken)
     // CALCULATE THE AMOUNTS OF TOKEN0 AND TOKEN1 IN THE LIQUIDITY
     const reserves = await lpToken.getReserves();
 
@@ -123,7 +129,21 @@ export class MiniLiquidityProviderService {
     }
   }
 
-  async getUserPoolShare(signer: Signer): Promise<string> {
+  async getUserLpToken(signerOrPrivateKey: Signer | string) {
+    // GET THE CONTRACT INSTANCES
+    const signer = this.factory.getSigner(signerOrPrivateKey);
+
+    const mlpContract = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI).connect(signer);
+    const lpTokenAddress = await mlpContract.getLpTokenAddress();
+    const lpToken = this.factory.getContract(lpTokenAddress, ERC20ABI).connect(signer);
+    const decimals = await lpToken.decimals();
+    return BigDecimal.fromBigNumber(await lpToken.balanceOf(signer.getAddress()), decimals);
+  }
+
+  async getUserPoolShare(signerOrPrivateKey: Signer | string): Promise<string> {
+    // GET THE CONTRACT INSTANCES
+    const signer = this.factory.getSigner(signerOrPrivateKey);
+
      // GET THE CONTRACT INSTANCES
      const mlpContract = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI).connect(signer);
      const lpTokenAddress = await mlpContract.getLpTokenAddress();

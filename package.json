@@ -1,6 +1,6 @@
 {
   "name": "@humandataincome/ethersfactory",
-  "version": "1.3.17",
+  "version": "1.3.18",
   "description": "A comprehensive collection of useful tools to interact with DeFi apps",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -10,13 +10,13 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/humandataincome/hudi-packages-ethersfactory.git"
-},
-"author": "Human Data Income LTD",
-"license": "ISC",
-"bugs": {
+  },
+  "author": "Human Data Income LTD",
+  "license": "ISC",
+  "bugs": {
     "url": "https://github.com/humandataincome/hudi-packages-ethersfactory/issues"
-},
-"homepage": "https://github.com/humandataincome/hudi-packages-ethersfactory#readme",
+  },
+  "homepage": "https://github.com/humandataincome/hudi-packages-ethersfactory#readme",
   "scripts": {
     "clean": "rimraf coverage build tmp",
     "prebuild": "npm run lint",

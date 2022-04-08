@@ -104,8 +104,7 @@ export class TokenService {
 
   public async getTotalSupply(tokenAddress: string): Promise<BigDecimal> {
     const tokenContract = this.factory.getContract(tokenAddress, ERC20ABI);
-    const tokenDecimals = await tokenContract.decimals();
-    return BigDecimal.fromBigNumber(await tokenContract.totalSupply(), tokenDecimals);
+    return BigDecimal.fromBigNumber(await tokenContract.totalSupply(), 18);
   }
 
   public removeAllListeners(): void {

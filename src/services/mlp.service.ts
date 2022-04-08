@@ -74,8 +74,9 @@ export class MiniLiquidityProviderService {
     // GET THE CONTRACT INSTANCES
     const signer = this.factory.getSigner(signerOrPrivateKey);
     const mlpContract = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI).connect(signer);
-    const lpTokenAddress = await mlpContract.getLpTokenAddress();
-    const lpToken = this.factory.getContract(lpTokenAddress, DexPairABI);
+    const lpTokenAddress = await this.getLPTokenAddress();
+    const lpToken = new ethers.Contract(lpTokenAddress, DexPairABI, signer);
+
     this.logger.log('debug', `LPTOKEN ADDRESS: ${lpTokenAddress}`);
 
     this.logger.log('debug', `AMOUNT TO REMOVE IS: ${amountToRemove.toString()}`);
@@ -84,17 +85,16 @@ export class MiniLiquidityProviderService {
     this.logger.log('debug', `USER LIQUIDITY AMOUNT IS: ${userlpTokenAmount.toString()}`);
 
     // CALCULATE THE POOL SHARE IN THE LIQUIDITY
-    const lpTokenTotalSupply = await lpToken.totalSupply();
+    const lpTokenTotalSupply: BigNumber = await lpToken.totalSupply();
     this.logger.log('debug', `TOTAL LIQUIDITY SUPPLY: ${lpTokenTotalSupply.toString()}`);
 
-    const amount1 = BigDecimal.fromBigNumber(userlpTokenAmount);
-    const amount2 = BigDecimal.fromBigNumber(lpTokenTotalSupply);
+    const amount1 = BigDecimal.fromBigNumber(userlpTokenAmount, 18);
+    const amount2 = BigDecimal.fromBigNumber(lpTokenTotalSupply, 18);
     const poolShare = amount1.div(amount2).toPrecision(18);
     this.logger.log('debug', `USER POOL SHARE IS: ${poolShare.toString()}`);
 
-    console.log(lpToken)
     // CALCULATE THE AMOUNTS OF TOKEN0 AND TOKEN1 IN THE LIQUIDITY
-    const reserves = await lpToken.getReserves();
+    const reserves: BigNumber[]  = await lpToken.getReserves();
 
     console.log('token0: ', await lpToken.token0());
     console.log('token1: ', await lpToken.token1());
@@ -102,17 +102,20 @@ export class MiniLiquidityProviderService {
     this.logger.log('debug', `HUDI POOL RESERVE AMOUNT IS: ${reserves[0].toString()}`);
     this.logger.log('debug', `BNB POOL RESERVE AMOUNT IS: ${reserves[1].toString()}`);
 
-    const reserveHUDI = BigDecimal.fromBigNumber(reserves[0]);
-    const reserveBNB = BigDecimal.fromBigNumber(reserves[1]);
+    const reserveHUDI = BigDecimal.fromBigNumber(reserves[0], 18);
+    const reserveBNB = BigDecimal.fromBigNumber(reserves[1], 18);
 
-    const userBNBPoolAmount = ((reserveBNB.mul(poolShare)).mul(slippage)).floor();
-    const userHUDIPoolAmount = ((reserveHUDI.mul(poolShare)).mul(slippage)).floor();
+    // const userBNBPoolAmount = ((reserveBNB.mul(poolShare)).mul(slippage)).floor();
+    // const userHUDIPoolAmount = ((reserveHUDI.mul(poolShare)).mul(slippage)).floor();
+
+    const userBNBPoolAmount = reserveBNB;
+    const userHUDIPoolAmount = reserveHUDI;
 
     this.logger.log('debug', `USER BNB POOL AMOUNT IS: ${userBNBPoolAmount.toString()}`);
     this.logger.log('debug', `USER HUDI POOL AMOUNT IS: ${userHUDIPoolAmount.toString()}`);
 
-    const amountTokenMin = ethers.BigNumber.from(userHUDIPoolAmount.toString());
-    const amountETHMin = ethers.BigNumber.from(userBNBPoolAmount.toString());
+    const amountTokenMin = userHUDIPoolAmount.toBigNumber(18);
+    const amountETHMin = userBNBPoolAmount.toBigNumber(18);
 
     const deadline = Math.floor(Date.now() / 1000) + (60 * 10);//10 minutes
 

@@ -7,10 +7,23 @@ async function main() {
     const mlpService = new MiniLiquidityProviderService(BSCTEST_CONFIG);
 
     const privateKey = '';
-    const amount     = BigDecimal.fromBigNumber(ethers.utils.parseEther("0.01"))
-
+    const amount     = new BigDecimal(0.01)
     try {
-        await mlpService.getLPTokensOut(privateKey, amount)
+        // getLPTokensOut - projection of the lptoken ernead
+        const resultGetLPTokensOut = await mlpService.getLPTokensOut(privateKey, amount);
+        console.log('TEST getLPTokensOut - RESULT', resultGetLPTokensOut)
+
+        // add amount to a liquidity pool
+        const resultAddLiquidity = await mlpService.addLiquidity(privateKey, amount);
+        console.log('TEST addLiquidity - RESULT', resultAddLiquidity)
+
+        if(resultAddLiquidity) {
+            // remove liquidity from a pool
+            const slippage = 0.3;
+            const percentageToRemove = 90
+            const resultRemoveLiquidity = await mlpService.removeLiquidity(privateKey, percentageToRemove, slippage)
+            console.log('TEST removeLiquidity - RESULT', resultRemoveLiquidity)
+        }
         process.exit(0)
     }
     catch(err:any) {

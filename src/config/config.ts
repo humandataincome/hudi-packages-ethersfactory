@@ -62,8 +62,8 @@ export const BSCTEST_CONFIG: Config = {
     },
     proxyUtils: '0x7ba8b8286359e10C4537A76006bEbf0B8Ae0a6A6',
 
-    // dexRouter: '0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3', // panacakeswap router pancake.kiemtienonline360
-    dexRouter: '0xD99D1c33F9fC3444f8101754aBC46c52416550D1',  // official panacakeswap router bsc testnet
+    dexRouter: '0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3', // panacakeswap router pancake.kiemtienonline360
+    //dexRouter: '0xD99D1c33F9fC3444f8101754aBC46c52416550D1',  // official panacakeswap router bsc testnet
 
     miniLiquidityProvider: '0xD780C7F4AbF1cF38C65f0952E919CA25c87E70dd',
     pancakeSwapLocker: '0xDea76607d9ba4FdFA04eeE51f4360fEE2B38ed0a',

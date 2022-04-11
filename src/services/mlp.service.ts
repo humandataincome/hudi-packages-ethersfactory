@@ -59,7 +59,7 @@ export class MiniLiquidityProviderService {
 
     try {
       this.logger.log('debug', `START TO ADD LIQUIDITY...`);
-      const tx = await mlpContract.addLiquidity(amountOutMin, deadline, {value: amountToAdd.toBigNumber(18)})
+      const tx = await mlpContract.connect(signer).addLiquidity(amountOutMin, deadline, {value: amountToAdd.toBigNumber(18)})
       await tx.wait()
       this.logger.log('debug', 'DONE');
       this.logger.log('debug', `USER LP TOKEN BALANCE: ${(await lpToken.balanceOf(signer.getAddress())).toString()}`);
@@ -79,10 +79,11 @@ export class MiniLiquidityProviderService {
     const lpToken         = new ethers.Contract(lpTokenAddress, DexPairABI, signer);
     const signerAddress   = await signer.getAddress()
 
+    this.logger.log('debug', `SIGNER ADDRESS: ${signerAddress}`);
     this.logger.log('debug', `LPTOKEN ADDRESS: ${lpTokenAddress}`);
-    this.logger.log('debug', `AMOUNT LPTOKEN PERCENTAGE TO REMOVE IS: ${percentage}`);
+    this.logger.log('debug', `AMOUNT LPTOKEN PERCENTAGE TO REMOVE IS: ${percentage}%`);
 
-    const userlpTokenAmount: BigNumber =  await lpToken.balanceOf(signer.getAddress());
+    const userlpTokenAmount: BigNumber =  await lpToken.balanceOf(signerAddress);
     this.logger.log('debug', `USER LPTOKEN BALANCE IS: ${userlpTokenAmount.toString()}`);
 
     if(userlpTokenAmount.lte(0)) {
@@ -110,8 +111,10 @@ export class MiniLiquidityProviderService {
     const reserveHUDI = BigDecimal.fromBigNumber(reserves[0], 18);
     const reserveBNB = BigDecimal.fromBigNumber(reserves[1], 18);
 
-    const userBNBPoolAmount = reserveBNB.mul(poolShare);//.mul(1 - (slippage ?? 0.001))).floor();
-    const userHUDIPoolAmount = reserveHUDI.mul(poolShare);//.mul(1 - (slippage ?? 0.001))).floor();
+    slippage = slippage || 0.001;
+    this.logger.log('debug', `SLIPPAGE IS: ${slippage}`);
+    const userBNBPoolAmount = reserveBNB.mul(poolShare).mul(slippage);
+    const userHUDIPoolAmount = reserveHUDI.mul(poolShare).mul(slippage);
 
     this.logger.log('debug', `USER BNB POOL AMOUNT IS: ${userBNBPoolAmount.toBigNumber(18).toString()}`);
     this.logger.log('debug', `USER TOKEN POOL AMOUNT IS: ${userHUDIPoolAmount.toBigNumber(18).toString()}`);
@@ -126,17 +129,21 @@ export class MiniLiquidityProviderService {
     this.logger.log('debug', `AMOUNT ETH MIN IS: ${amountETHMin.toString()}`);
 
     // APPROVE THE CONTRACT TO SPEND LPTOKENS 
-    await (await lpToken.connect(signer).approve(this.config.addresses.miniLiquidityProvider, ethers.constants.MaxUint256)).wait();
-    this.logger.log('debug', `CONTRACT APPROVED TO SPEND LPTOKENS`);
+    const allowance = await lpToken.allowance(signerAddress, this.config.addresses.miniLiquidityProvider)
+    this.logger.log('debug', `CONTRACT ALLOWANCE FOR LPTOKEN IS: ${allowance.toString()}`);
+    if(allowance.lt(amountToRemove)) {
+      await (await lpToken.connect(signer).approve(this.config.addresses.miniLiquidityProvider, ethers.constants.MaxUint256)).wait();
+      this.logger.log('debug', `CONTRACT APPROVED TO SPEND LPTOKENS`);
+    }
     
     const deadline = Math.floor(Date.now() / 1000) + (60 * 10);//10 minutes
 
     try {
       this.logger.log('debug', `START TO REMOVE LIQUIDITY...`);
-      const tx = await mlpContract.removeLiquidity(amountToRemove, amountTokenMin, amountETHMin, deadline)
+      const tx = await mlpContract.connect(signer).removeLiquidity(amountToRemove, amountTokenMin, amountETHMin, deadline)
       await tx.wait();
       this.logger.log('debug', `DONE.`);
-      this.logger.log('debug', `USER LP TOKEN BALANCE: ${(await lpToken.balanceOf(signer.getAddress())).toString()}`);
+      this.logger.log('debug', `USER LP TOKEN BALANCE: ${(await lpToken.balanceOf(signerAddress)).toString()}`);
       return true;
     } catch (err) {
       this.logger.log('debug', `removeLiquidity ERROR: ${err}`);

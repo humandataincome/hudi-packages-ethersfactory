@@ -6,7 +6,7 @@ async function main() {
 
     const mlpService = new MiniLiquidityProviderService(BSCTEST_CONFIG);
 
-    const privateKey = '';
+    const privateKey = '54f32c6eba332abde55017c6da93fcb45e8cbca8ca4af43583651883a7f5bda6';
     const amount     = new BigDecimal(0.01)
     try {
         // getLPTokensOut - projection of the lptoken ernead

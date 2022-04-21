@@ -1,13 +1,14 @@
-import { ethers } from 'ethers';
+import {ethers, utils} from 'ethers';
 import { BigDecimal, BSCTEST_CONFIG, EvmService, MiniLiquidityProviderService } from '../src';
 import {MiniLiquidityProviderABI} from '../src/abis';
+import Decimal from "decimal.js";
 
 async function main() {
 
     const mlpService = new MiniLiquidityProviderService(BSCTEST_CONFIG);
 
-    const privateKey = '54f32c6eba332abde55017c6da93fcb45e8cbca8ca4af43583651883a7f5bda6';
-    const amount     = new BigDecimal(0.01)
+    const privateKey = '';
+    const amount     = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.0123456'), 18).toFixed(3, Decimal.ROUND_DOWN))
     try {
         // getLPTokensOut - projection of the lptoken ernead
         const resultGetLPTokensOut = await mlpService.getLPTokensOut(privateKey, amount);
@@ -20,7 +21,7 @@ async function main() {
         if(resultAddLiquidity) {
             // remove liquidity from a pool
             const slippage = 0.3;
-            const percentageToRemove = 90
+            const percentageToRemove = 0.9
             const resultRemoveLiquidity = await mlpService.removeLiquidity(privateKey, percentageToRemove, slippage)
             console.log('TEST removeLiquidity - RESULT', resultRemoveLiquidity)
         }

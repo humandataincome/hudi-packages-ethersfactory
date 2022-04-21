@@ -6,6 +6,7 @@ import { EvmFactory } from './evm.factory';
 import Logger from '../utils/logger';
 import * as ethers from 'ethers';
 import { BigNumber } from 'ethers';
+import Decimal from "decimal.js";
 
 export class MiniLiquidityProviderService {
   private logger = new Logger(MiniLiquidityProviderService.name);
@@ -35,6 +36,9 @@ export class MiniLiquidityProviderService {
     if (amountToAdd.lt(0)) {
       throw new Error('AMOUNT MUST BE GREATHER THAN 0');
     }
+    // TODO: Ask to Andrea (help us)
+    amountToAdd = new BigDecimal(amountToAdd.toFixed(3, Decimal.ROUND_DOWN));
+
     this.logger.log('debug', `AMOUNT TO ADD IS: ${amountToAdd.toString()}`);
 
     // GET THE CONTRACT INSTANCES
@@ -47,7 +51,8 @@ export class MiniLiquidityProviderService {
 
     // CALCULATE THE MIN AMOUNT
     this.logger.log('debug', `GET THE MIN AMOUNTOUT`);
-    const amountToSwap = amountToAdd.div(2);
+    const amountToSwap = new BigDecimal(amountToAdd).div(2);
+    this.logger.log('debug', `GET amountToAdd ${ amountToAdd.toBigNumber(18).toString() }`, )
 
     const amounts: BigNumber[] = await routerContract.getAmountsOut(amountToSwap.toBigNumber(18), [this.config.addresses.tokens.WETH, this.config.addresses.tokens.HUDI]);
     this.logger.log('debug', `AMOUNTS: ${amounts.map((x: BigNumber) => x.toString())}`);
@@ -75,7 +80,7 @@ export class MiniLiquidityProviderService {
     // GET THE CONTRACT INSTANCES
     const signer          = this.factory.getSigner(signerOrPrivateKey);
     const mlpContract     = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI).connect(signer);
-    const lpTokenAddress  = await this.getLPTokenAddress();
+    const lpTokenAddress =  await mlpContract.getLpTokenAddress();
     const lpToken         = new ethers.Contract(lpTokenAddress, DexPairABI, signer);
     const signerAddress   = await signer.getAddress()
 

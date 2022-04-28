@@ -14,7 +14,7 @@ export const BSC_CONFIG: Config = {
     },
     proxyUtils: '0xFC308b8346198ba98b166282BbE01eCEF94E50e6',
     dexRouter: '0x10ED43C718714eb63d5aA57B78B54704E256024E',
-    miniLiquidityProvider: '',
+    miniLiquidityProvider: '0x01f86cD540CD150ddE2006FC4A4bDD56f71f85F8',
     pancakeSwapLocker: '',
     prediction: '0x18B2A687610328590Bc8F2e5fEdDe3b582A49cdA',
   },

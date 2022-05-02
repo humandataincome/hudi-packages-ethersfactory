@@ -1,14 +1,18 @@
 import {ethers, utils} from 'ethers';
-import { BigDecimal, BSCTEST_CONFIG, EvmService, MiniLiquidityProviderService } from '../src';
+import { BigDecimal, BSC_CONFIG, BSCTEST_CONFIG, EvmService, MiniLiquidityProviderService } from '../src';
 import {MiniLiquidityProviderABI} from '../src/abis';
 import Decimal from "decimal.js";
 
+const isTestnet     = true;
+const CONFIG        = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
+const PRIVATE_KEY   = isTestnet ? '' : '';
+
 async function main() {
 
-    const mlpService = new MiniLiquidityProviderService(BSCTEST_CONFIG);
+    const mlpService = new MiniLiquidityProviderService(CONFIG);
 
-    const privateKey = '';
-    const amount     = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.0123456'), 18).toFixed(3, Decimal.ROUND_DOWN))
+    const privateKey = PRIVATE_KEY;
+    const amount     = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.02'), 18).toFixed(4, Decimal.ROUND_DOWN))
     try {
         // getLPTokensOut - projection of the lptoken ernead
         const resultGetLPTokensOut = await mlpService.getLPTokensOut(privateKey, amount);

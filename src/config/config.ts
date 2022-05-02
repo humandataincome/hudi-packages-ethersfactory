@@ -14,7 +14,7 @@ export const BSC_CONFIG: Config = {
     },
     proxyUtils: '0xFC308b8346198ba98b166282BbE01eCEF94E50e6',
     dexRouter: '0x10ED43C718714eb63d5aA57B78B54704E256024E',
-    miniLiquidityProvider: '0x01f86cD540CD150ddE2006FC4A4bDD56f71f85F8',
+    miniLiquidityProvider: '0xe62B82b85E898FF1b8B2A960C234B17F8DB4C0dF',
     pancakeSwapLocker: '',
     prediction: '0x18B2A687610328590Bc8F2e5fEdDe3b582A49cdA',
   },
@@ -66,7 +66,7 @@ export const BSCTEST_CONFIG: Config = {
     // dexRouter: '0xD99D1c33F9fC3444f8101754aBC46c52416550D1',  // official panacakeswap router bsc testnet
 
     // miniLiquidityProvider: '0xD780C7F4AbF1cF38C65f0952E919CA25c87E70dd',
-    miniLiquidityProvider: '0x5872205BF2E554d4cB126F4604aEeD4a43E3090d',
+    miniLiquidityProvider: '0xbe972944adf82787872baf9Cf22004d7B50B318D',
     pancakeSwapLocker: '0xDea76607d9ba4FdFA04eeE51f4360fEE2B38ed0a',
     prediction: '',
   },

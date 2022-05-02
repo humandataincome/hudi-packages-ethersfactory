@@ -47,14 +47,18 @@ export class MiniLiquidityProviderService {
     const routerContract  = this.factory.getContract(this.config.addresses.dexRouter, DexRouter02ABI).connect(signer);
     const lpTokenAddress  = await mlpContract.getLpTokenAddress();
     const lpToken         = this.factory.getContract(this.config.addresses.tokens.CAKELP, ERC20ABI).connect(signer);
+    const WETH            = await routerContract.WETH();
+    const HUDI            = this.config.addresses.tokens.HUDI
+
+    this.logger.log('debug', `WETH ADDRESS: ${WETH}`);
+    this.logger.log('debug', `HUDI ADDRESS: ${HUDI}`);
     this.logger.log('debug', `LPTOKEN ADDRESS: ${lpTokenAddress}`);
 
     // CALCULATE THE MIN AMOUNT
-    this.logger.log('debug', `GET THE MIN AMOUNTOUT`);
     const amountToSwap = new BigDecimal(amountToAdd).div(2);
-    this.logger.log('debug', `GET amountToAdd ${ amountToAdd.toBigNumber(18).toString() }`, )
+    this.logger.log('debug', `amountToAdd ${amountToAdd.toBigNumber(18).toString()}`, )
 
-    const amounts: BigNumber[] = await routerContract.getAmountsOut(amountToSwap.toBigNumber(18), [this.config.addresses.tokens.WETH, this.config.addresses.tokens.HUDI]);
+    const amounts: BigNumber[] = await routerContract.getAmountsOut(amountToSwap.toBigNumber(18), [WETH, HUDI]);
     this.logger.log('debug', `AMOUNTS: ${amounts.map((x: BigNumber) => x.toString())}`);
 
     const amountOutMin = amounts[1];
@@ -63,7 +67,8 @@ export class MiniLiquidityProviderService {
     const deadline = Math.floor(Date.now() / 1000) + (60*10);//10 minutes
 
     try {
-      this.logger.log('debug', `START TO ADD LIQUIDITY...`);
+      this.logger.log('debug', `START TO ADD LIQUIDITY... `);
+      this.logger.log('debug', `ARGS: amountOutMin: ${amountOutMin.toString()}, deadline: ${deadline.toString()}, value: ${amountToAdd.toBigNumber(18).toString()}`);
       const tx = await mlpContract.connect(signer).addLiquidity(amountOutMin, deadline, {value: amountToAdd.toBigNumber(18)})
       await tx.wait()
       this.logger.log('debug', 'DONE');

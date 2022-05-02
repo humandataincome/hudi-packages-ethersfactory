@@ -72,7 +72,7 @@ export class MiniLiquidityProviderService {
       const tx = await mlpContract.connect(signer).addLiquidity(amountOutMin, deadline, {value: amountToAdd.toBigNumber(18)})
       await tx.wait()
       this.logger.log('debug', 'DONE');
-      this.logger.log('debug', `USER LP TOKEN BALANCE: ${(await lpToken.balanceOf(signer.getAddress())).toString()}`);
+
       return true
     } catch (err) {
       this.logger.log('debug', `addLiquidity ERROR: ${err}`);

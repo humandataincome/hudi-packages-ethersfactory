@@ -5,14 +5,10 @@ import { Signer } from '@ethersproject/abstract-signer';
 import { EvmFactory } from './evm.factory';
 import Logger from '../utils/logger';
 import * as ethers from 'ethers';
-import { BigNumber } from 'ethers';
-import Decimal from "decimal.js";
-
 export class Stake {
   balance: BigDecimal;
   stakeDate: Date;
 }
-
 export class StakingService {
   private logger = new Logger(StakingService.name);
   private config: Config;

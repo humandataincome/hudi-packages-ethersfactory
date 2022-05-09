@@ -36,7 +36,6 @@ export class MiniLiquidityProviderService {
     if (amountToAdd.lt(0)) {
       throw new Error('AMOUNT MUST BE GREATHER THAN 0');
     }
-    // TODO: Ask to Andrea (help us)
     amountToAdd = new BigDecimal(amountToAdd.toFixed(3, Decimal.ROUND_DOWN));
 
     this.logger.log('debug', `AMOUNT TO ADD IS: ${amountToAdd.toString()}`);

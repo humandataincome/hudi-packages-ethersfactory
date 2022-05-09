@@ -15,7 +15,8 @@ export interface Config {
     dexRouter: string,
     miniLiquidityProvider: string,
     pancakeSwapLocker: string,
-    prediction: string
+    prediction: string,
+    staking: string
   },
   jsonRpcUrl: string,
   explorerUrl: string,

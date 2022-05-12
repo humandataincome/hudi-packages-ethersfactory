@@ -3,29 +3,47 @@ import { BigDecimal, BSC_CONFIG, BSCTEST_CONFIG, EvmService} from '../src';
 import {StakingABI} from '../src/abis';
 import { StakingService } from '../src/services/staking.service';
 
-const isTestnet     = true;
-const CONFIG        = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
-const PRIVATE_KEY   = isTestnet ? '' : '';
-
+const isTestnet          = true;
+const CONFIG             = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
+const USER_PRIVATE_KEY   = isTestnet ? '' : '';
 async function main() {
 
     const stakingService = new StakingService(CONFIG);
-
-    const privateKey     = PRIVATE_KEY;
     const amountToStake  = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.02')))
     try {
-        // STAKE
-        let result = await stakingService.stake(privateKey, amountToStake)
-        console.log('STAKE RESULT:', result)
-        
+        // GET STAKING TOTAL SUPPLYS
+        let totalsupply = await stakingService.getStakingTotalSupply(USER_PRIVATE_KEY); 
+
         // GET STAKE
-        const stake = await stakingService.getStake(privateKey); 
+        let stake = await stakingService.getStakeInfo(USER_PRIVATE_KEY); 
         console.log('STAKE', stake)
 
-        // WITHDRAW and CLAIM
-        result = await stakingService.withdrawAndClaim(privateKey)
-        console.log('WITHDRAW and CLAIM RESULT', result)
+        // STAKE
+        await stakingService.stake(USER_PRIVATE_KEY, amountToStake)
 
+        // GET STAKING TOTAL SUPPLYS
+        totalsupply = await stakingService.getStakingTotalSupply(USER_PRIVATE_KEY); 
+
+        // GET STAKE
+        stake = await stakingService.getStakeInfo(USER_PRIVATE_KEY); 
+        console.log('STAKE', stake)
+
+        // GET REWARDS EARNED
+        const earned = await stakingService.getRewardsEarned(USER_PRIVATE_KEY); 
+
+        // WITHDRAW
+        const amountToWithDraw  = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.01')))
+        await stakingService.withdraw(USER_PRIVATE_KEY, amountToWithDraw)
+
+        // GET STAKE
+        stake = await stakingService.getStakeInfo(USER_PRIVATE_KEY); 
+        console.log('STAKE', stake?.balance)
+
+        // WITHDRAW and CLAIM
+        await stakingService.withdrawAndClaim(USER_PRIVATE_KEY)
+
+        // GET STAKING TOTAL SUPPLYS
+        totalsupply = await stakingService.getStakingTotalSupply(USER_PRIVATE_KEY); 
         process.exit(0)
     }
     catch(err:any) {

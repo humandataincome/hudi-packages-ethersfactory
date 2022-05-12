@@ -29,6 +29,7 @@
     "test:prediction": "ts-node test/prediction.test.ts",
     "test:omniswap": "ts-node test/omniswap.test.ts",
     "test:mlp": "ts-node test/mlp.test.ts",
+    "test:staking": "ts-node test/staking.test.ts",
     "prepublish": "npm run build"
   },
   "devDependencies": {

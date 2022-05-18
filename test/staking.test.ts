@@ -8,11 +8,23 @@ const CONFIG             = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
 const USER_PRIVATE_KEY   = isTestnet ? '' : '';
 async function main() {
 
-    const stakingService = new StakingService(CONFIG);
+    const stakingService = new StakingService(CONFIG, CONFIG.addresses.staking);
     const amountToStake  = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.02')))
     try {
-        // GET STAKING TOTAL SUPPLYS
-        let totalsupply = await stakingService.getStakingTotalSupply(USER_PRIVATE_KEY); 
+        // GET STAKING APR
+        const APR = await stakingService.getAPR(); 
+
+        // GET STAKING MIN AMOUNT
+        await stakingService.getStakingMinAmount(); 
+
+        // GET STAKING MAX AMOUNT
+        await stakingService.getStakingMaxAmount(); 
+
+        // GET WITHDRAW LOCK PERIOD
+        await stakingService.getWithdrawLockPeriod(); 
+
+        // GET STAKING TOTAL SUPPLY
+        let totalsupply = await stakingService.getStakingTotalSupply(); 
 
         // GET STAKE
         let stake = await stakingService.getStakeInfo(USER_PRIVATE_KEY); 
@@ -22,7 +34,7 @@ async function main() {
         await stakingService.stake(USER_PRIVATE_KEY, amountToStake)
 
         // GET STAKING TOTAL SUPPLYS
-        totalsupply = await stakingService.getStakingTotalSupply(USER_PRIVATE_KEY); 
+        totalsupply = await stakingService.getStakingTotalSupply(); 
 
         // GET STAKE
         stake = await stakingService.getStakeInfo(USER_PRIVATE_KEY); 
@@ -43,7 +55,7 @@ async function main() {
         await stakingService.withdrawAndClaim(USER_PRIVATE_KEY)
 
         // GET STAKING TOTAL SUPPLYS
-        totalsupply = await stakingService.getStakingTotalSupply(USER_PRIVATE_KEY); 
+        totalsupply = await stakingService.getStakingTotalSupply(); 
         process.exit(0)
     }
     catch(err:any) {

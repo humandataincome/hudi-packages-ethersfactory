@@ -16,7 +16,8 @@ export interface Config {
     miniLiquidityProvider: string,
     pancakeSwapLocker: string,
     prediction: string,
-    staking: string
+    staking: string,
+    lpTokenStaking: string
   },
   jsonRpcUrl: string,
   explorerUrl: string,

@@ -14,10 +14,12 @@ export class StakingService {
   private logger = new Logger(StakingService.name);
   private config: Config;
   private factory: EvmFactory;
+  stakingContractAddress: string;
 
-  constructor(config: Config) {
+  constructor(config: Config, stakingContractAddress: string) {
     this.config = config;
     this.factory = new EvmFactory(config);
+    this.stakingContractAddress = stakingContractAddress;
   }
 
   async stake(signerOrPrivateKey: Signer | string, amountToStake: BigDecimal) : Promise<boolean> {
@@ -29,20 +31,20 @@ export class StakingService {
 
     const signer          = this.factory.getSigner(signerOrPrivateKey);
     const signerAddress   = await signer.getAddress();
-    const stakingContract = this.factory.getContract(this.config.addresses.staking, StakingABI).connect(signer);
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(signer);
     const stakingToken    = this.factory.getContract(this.config.addresses.tokens.HUDI, ERC20ABI).connect(signer);
 
     this.logger.log('debug', `STAKING TOKEN ADDRESS IS: ${this.config.addresses.tokens.HUDI}`);
     
     // APPROVE THE CONTRACT TO SPEND LPTOKENS
-    const allowance = await stakingToken.allowance(signerAddress, this.config.addresses.staking);
+    const allowance = await stakingToken.allowance(signerAddress, this.stakingContractAddress);
     this.logger.log('debug', `CONTRACT ALLOWANCE FOR STAKING TOKEN IS: ${allowance.toString()}`);
     
     const amount = amountToStake.toBigNumber(18);
     
     if(allowance.lt(amount)) {
       this.logger.log('debug', `APPROVING ALLOWANCE...`);
-      await (await stakingToken.connect(signer).approve(this.config.addresses.staking, ethers.constants.MaxUint256)).wait();
+      await (await stakingToken.connect(signer).approve(this.stakingContractAddress, ethers.constants.MaxUint256)).wait();
       this.logger.log('debug', `CONTRACT APPROVED TO SPEND STAKING TOKEN`);
     }
     
@@ -60,7 +62,7 @@ export class StakingService {
 
   async getRewardsEarned(signerOrPrivateKey: Signer | string) : Promise<BigDecimal> {
     const signer          = this.factory.getSigner(signerOrPrivateKey);
-    const stakingContract = this.factory.getContract(this.config.addresses.staking, StakingABI).connect(signer);
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(signer);
     
     try {
       this.logger.log('debug', `RETRIEVING REWARDS EARNED`);
@@ -73,13 +75,12 @@ export class StakingService {
     }
   }
 
-  async getStakingTotalSupply(signerOrPrivateKey: Signer | string) : Promise<BigDecimal> {
-    const signer          = this.factory.getSigner(signerOrPrivateKey);
-    const stakingContract = this.factory.getContract(this.config.addresses.staking, StakingABI).connect(signer);
+  async getStakingTotalSupply() : Promise<BigDecimal> {
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
     
     try {
       this.logger.log('debug', `RETRIEVING STAKING TOTAL SUPPLY`);
-      const result = await stakingContract.connect(signer).getStakingTotalSupply();
+      const result = await stakingContract.getStakingTotalSupply();
       this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result)}`);
       return BigDecimal.fromBigNumber(result);
     } catch (err) {
@@ -88,9 +89,66 @@ export class StakingService {
     }
   }
 
+  async getAPR() : Promise<number> {
+    // const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
+    
+    // try {
+    //   this.logger.log('debug', `RETRIEVING APR`);
+    //   const result = await stakingContract.getAPR();
+    //   this.logger.log('debug', `RESULT: ${result}`);
+    //   return result;
+    // } catch (err) {
+    //   this.logger.log('debug', `getAPR ERROR: ${err}`);
+    //   throw new Error('Server Error');
+    // }
+    return 30;
+  }
+
+  async getStakingMinAmount() : Promise<BigDecimal> {
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
+    
+    try {
+      this.logger.log('debug', `RETRIEVING STAKING MIN AMOUNT`);
+      const result = await stakingContract.stakingMinAmount();
+      this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result)}`);
+      return BigDecimal.fromBigNumber(result);
+    } catch (err) {
+      this.logger.log('debug', `getStakingMinAmount ERROR: ${err}`);
+      throw new Error('Server Error');
+    }
+  }
+
+  async getStakingMaxAmount() : Promise<BigDecimal> {
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
+    
+    try {
+      this.logger.log('debug', `RETRIEVING STAKING MAX AMOUNT`);
+      const result = await stakingContract.stakingMaxAmount();
+      this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result)}`);
+      return BigDecimal.fromBigNumber(result);
+    } catch (err) {
+      this.logger.log('debug', `getStakingMaxAmount ERROR: ${err}`);
+      throw new Error('Server Error');
+    }
+  }
+
+  async getWithdrawLockPeriod() : Promise<number> {
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
+    
+    try {
+      this.logger.log('debug', `RETRIEVING WITHDRAW LOCK PERIOD`);
+      const result = await stakingContract.withdrawLockPeriod();
+      this.logger.log('debug', `RESULT: ${result} seconds`);
+      return result
+    } catch (err) {
+      this.logger.log('debug', `getWithdrawLockPeriod ERROR: ${err}`);
+      throw new Error('Server Error');
+    }
+  }
+
   async getStakeInfo(signerOrPrivateKey: Signer | string) : Promise<Stake | undefined> {
     const signer          = this.factory.getSigner(signerOrPrivateKey);
-    const stakingContract = this.factory.getContract(this.config.addresses.staking, StakingABI).connect(signer);
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(signer);
     
     try {
       this.logger.log('debug', `RETRIEVING USER STAKING INFO`);
@@ -116,7 +174,7 @@ export class StakingService {
     }
     this.logger.log('debug', `AMOUNT TO WITHDRAW IS: ${amountToWithDraw.toString()}`);
     const signer          = this.factory.getSigner(signerOrPrivateKey);
-    const stakingContract = this.factory.getContract(this.config.addresses.staking, StakingABI).connect(signer);
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(signer);
     
     try {
       this.logger.log('debug', `START TO WITHDRAW...`);
@@ -133,7 +191,7 @@ export class StakingService {
   async claimRewards(signerOrPrivateKey: Signer | string) : Promise<boolean> {
     
     const signer          = this.factory.getSigner(signerOrPrivateKey);
-    const stakingContract = this.factory.getContract(this.config.addresses.staking, StakingABI).connect(signer);
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(signer);
     
     try {
       this.logger.log('debug', `START TO CLAIM REWARDS...`);
@@ -150,7 +208,7 @@ export class StakingService {
   async withdrawAndClaim(signerOrPrivateKey: Signer | string) : Promise<boolean> {
     
     const signer          = this.factory.getSigner(signerOrPrivateKey);
-    const stakingContract = this.factory.getContract(this.config.addresses.staking, StakingABI).connect(signer);
+    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(signer);
     
     try {
       this.logger.log('debug', `START TO WITHDRAW AND CLAIM...`);

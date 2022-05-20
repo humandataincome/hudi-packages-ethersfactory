@@ -35,12 +35,13 @@ export class StakingService {
 
     this.logger.log('debug', `AMOUNT TO STAKE IS: ${amountToStake.toString()}`);
 
-    const signer          = this.factory.getSigner(signerOrPrivateKey);
-    const signerAddress   = await signer.getAddress();
-    const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(signer);
-    const stakingToken    = this.factory.getContract(this.config.addresses.tokens.HUDI, ERC20ABI).connect(signer);
+    const signer              = this.factory.getSigner(signerOrPrivateKey);
+    const signerAddress       = await signer.getAddress();
+    const stakingContract     = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(signer);
+    const stakingTokenAddress = await stakingContract.getStakingTokenAddress();
+    const stakingToken        = this.factory.getContract(stakingTokenAddress, ERC20ABI).connect(signer);
 
-    this.logger.log('debug', `STAKING TOKEN ADDRESS IS: ${this.config.addresses.tokens.HUDI}`);
+    this.logger.log('debug', `STAKING TOKEN ADDRESS IS: ${stakingTokenAddress}`);
     
     // APPROVE THE CONTRACT TO SPEND LPTOKENS
     const allowance = await stakingToken.allowance(signerAddress, this.stakingContractAddress);

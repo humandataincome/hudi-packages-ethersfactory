@@ -1,4 +1,5 @@
 export const StakingABI = [
+  'function rewardRate() public view returns (address)',
   'function getStakingTokenAddress() public view returns (address)',
   'function getRewardTokenAddress() public view returns (address)',
   'function stakingToken() public view returns (IERC20)',

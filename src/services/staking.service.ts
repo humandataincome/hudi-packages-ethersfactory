@@ -50,13 +50,13 @@ export class StakingService {
     
     if(allowance.lt(amount)) {
       this.logger.log('debug', `APPROVING ALLOWANCE...`);
-      await (await stakingToken.connect(signer).approve(this.stakingContractAddress, ethers.constants.MaxUint256)).wait();
+      await (await stakingToken.approve(this.stakingContractAddress, ethers.constants.MaxUint256)).wait();
       this.logger.log('debug', `CONTRACT APPROVED TO SPEND STAKING TOKEN`);
     }
     
     try {
       this.logger.log('debug', `START TO STAKE... `);
-      const tx = await stakingContract.connect(signer).stake(amount);
+      const tx = await stakingContract.stake(amount);
       await tx.wait()
       this.logger.log('debug', 'DONE');
       return true
@@ -72,9 +72,9 @@ export class StakingService {
     
     try {
       this.logger.log('debug', `RETRIEVING REWARDS EARNED`);
-      const result = await stakingContract.connect(signer).getRewardsEarned();
+      const result = await stakingContract.getRewardsEarned();
       this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result, 18)}`);
-      return BigDecimal.fromBigNumber(result);
+      return BigDecimal.fromBigNumber(result, 18);
     } catch (err) {
       this.logger.log('debug', `getRewardsEarned ERROR: ${err}`);
       throw new Error('Server Error');
@@ -88,7 +88,7 @@ export class StakingService {
       this.logger.log('debug', `RETRIEVING STAKING TOTAL SUPPLY`);
       const result = await stakingContract.getStakingTotalSupply();
       this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result, 18)}`);
-      return BigDecimal.fromBigNumber(result);
+      return BigDecimal.fromBigNumber(result, 18);
     } catch (err) {
       this.logger.log('debug', `getStakingTotalSupply ERROR: ${err}`);
       throw new Error('Server Error');
@@ -112,10 +112,18 @@ export class StakingService {
       const rewardToken = this.factory.getContract(rewardTokenAddress, ERC20ABI);
       const rewardTokenContractBalance = await rewardToken.balanceOf(this.stakingContractAddress);
       this.logger.log('debug', `contract rewardTokenContractBalance: ${rewardTokenContractBalance.toString()}`);
+
+      const stakingTotalSupply = BigDecimal.fromBigNumber(await stakingContract.getStakingTotalSupply(), 18);
+      this.logger.log('debug', `contract stakingTotalSupply: ${stakingTotalSupply.toString()}`);
  
-      const rewardPerToken: ethers.BigNumber = await stakingContract.rewardPerToken();
+      
+      const rewardRate = (BigDecimal.fromBigNumber(await stakingContract.rewardRate(), 18));
+      this.logger.log('debug', `rewardRate: ${rewardRate.toString()}`);
+
+      //const rewardPerToken = BigDecimal.fromBigNumber(await stakingContract.rewardPerToken(), 18);
+      const rewardPerToken = rewardRate.div(stakingTotalSupply);
       this.logger.log('debug', `rewardPerToken: ${rewardPerToken.toString()}`);
-      const apr = (BigDecimal.fromBigNumber(rewardPerToken, 18).div(1e18)).mul(365).mul(24).mul(60).mul(60);
+      const apr = rewardPerToken.mul(365).mul(24).mul(60).mul(60);
       this.logger.log('debug', `fixed apr: ${apr.toString()}`);
       
       const baseAmount = new BigDecimal(1);
@@ -150,7 +158,7 @@ export class StakingService {
           stakingTokenToRewardTokenRatio = stakingTokenUSDPrice.div(rewardTokenUSDPrice);
         }
       }
-      const result = apr.mul(stakingTokenToRewardTokenRatio.div(1e18));
+      const result = apr.mul(stakingTokenToRewardTokenRatio);
       this.logger.log('debug', `RESULT: ${result.toString()}`);
       return result;
     } catch(err) {

@@ -5,6 +5,8 @@ import { Signer } from '@ethersproject/abstract-signer';
 import { EvmFactory } from './evm.factory';
 import Logger from '../utils/logger';
 import * as ethers from 'ethers';
+import { DexService } from './dex.service';
+import { LPTokenService } from './lp-token.service';
 
 export class Stake {
   balance: BigDecimal;
@@ -14,12 +16,16 @@ export class StakingService {
   private logger = new Logger(StakingService.name);
   private config: Config;
   private factory: EvmFactory;
+  private dexService: DexService;
+  private lpTokenService: LPTokenService;
   stakingContractAddress: string;
 
   constructor(config: Config, stakingContractAddress: string) {
     this.config = config;
     this.factory = new EvmFactory(config);
     this.stakingContractAddress = stakingContractAddress;
+    this.dexService = new DexService(config)
+    this.lpTokenService = new LPTokenService(config);
   }
 
   async stake(signerOrPrivateKey: Signer | string, amountToStake: BigDecimal) : Promise<boolean> {
@@ -67,7 +73,7 @@ export class StakingService {
     try {
       this.logger.log('debug', `RETRIEVING REWARDS EARNED`);
       const result = await stakingContract.connect(signer).getRewardsEarned();
-      this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result)}`);
+      this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result, 18)}`);
       return BigDecimal.fromBigNumber(result);
     } catch (err) {
       this.logger.log('debug', `getRewardsEarned ERROR: ${err}`);
@@ -81,7 +87,7 @@ export class StakingService {
     try {
       this.logger.log('debug', `RETRIEVING STAKING TOTAL SUPPLY`);
       const result = await stakingContract.getStakingTotalSupply();
-      this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result)}`);
+      this.logger.log('debug', `RESULT: ${BigDecimal.fromBigNumber(result, 18)}`);
       return BigDecimal.fromBigNumber(result);
     } catch (err) {
       this.logger.log('debug', `getStakingTotalSupply ERROR: ${err}`);
@@ -89,19 +95,68 @@ export class StakingService {
     }
   }
 
-  async getAPR() : Promise<number> {
-    // const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
-    
-    // try {
-    //   this.logger.log('debug', `RETRIEVING APR`);
-    //   const result = await stakingContract.getAPR();
-    //   this.logger.log('debug', `RESULT: ${result}`);
-    //   return result;
-    // } catch (err) {
-    //   this.logger.log('debug', `getAPR ERROR: ${err}`);
-    //   throw new Error('Server Error');
-    // }
-    return 30;
+  async getAnnualPercentageRate() : Promise<BigDecimal> {
+    try {
+      this.logger.log('debug', `RETRIEVING STAKING APR`);
+      const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
+
+      // ONLY FOR DEBUG PURPOSE
+      const stakingTokenAddress: string = await stakingContract.getStakingTokenAddress();
+      this.logger.log('debug', `stakingTokenAddress: ${stakingTokenAddress}`);
+      const rewardTokenAddress: string = await stakingContract.getRewardTokenAddress();
+      this.logger.log('debug', `rewardTokenAddress: ${rewardTokenAddress}`);
+
+      const stakingToken    = this.factory.getContract(stakingTokenAddress, ERC20ABI);
+      const stakingTokenContractBalance = await stakingToken.balanceOf(this.stakingContractAddress);
+      this.logger.log('debug', `contract stakingTokenContractBalance: ${stakingTokenContractBalance.toString()}`);
+      const rewardToken = this.factory.getContract(rewardTokenAddress, ERC20ABI);
+      const rewardTokenContractBalance = await rewardToken.balanceOf(this.stakingContractAddress);
+      this.logger.log('debug', `contract rewardTokenContractBalance: ${rewardTokenContractBalance.toString()}`);
+ 
+      const rewardPerToken: ethers.BigNumber = await stakingContract.rewardPerToken();
+      this.logger.log('debug', `rewardPerToken: ${rewardPerToken.toString()}`);
+      const apr = (BigDecimal.fromBigNumber(rewardPerToken, 18).div(1e18)).mul(365).mul(24).mul(60).mul(60);
+      this.logger.log('debug', `fixed apr: ${apr.toString()}`);
+      
+      const baseAmount = new BigDecimal(1);
+      let stakingTokenToRewardTokenRatio: BigDecimal;
+
+      // CALCULATE STAKING TOKEN / REWARD TOKEN RATIO
+      if (stakingTokenAddress === rewardTokenAddress) {
+        stakingTokenToRewardTokenRatio = new BigDecimal(1);
+      }
+      else {
+        const isStakingTokenLP  = await this.lpTokenService.isLPToken(stakingTokenAddress);
+       
+        const isRewardTokenLP   = await this.lpTokenService.isLPToken(rewardTokenAddress);
+
+        if (!isStakingTokenLP && !isRewardTokenLP) {
+          stakingTokenToRewardTokenRatio = await this.dexService.getSwapAmountOut(stakingTokenAddress, rewardTokenAddress, baseAmount);
+        } else {
+          let stakingTokenUSDPrice;
+          if (isStakingTokenLP) {
+            stakingTokenUSDPrice = await this.lpTokenService.getUSDTEquivalent(stakingTokenAddress, baseAmount);
+          } else {
+            stakingTokenUSDPrice = await this.dexService.getSwapAmountOut(stakingTokenAddress, this.config.addresses.tokens.USDT, baseAmount);
+          }
+
+          let rewardTokenUSDPrice;
+          if (isRewardTokenLP) {
+            rewardTokenUSDPrice = await this.lpTokenService.getUSDTEquivalent(rewardTokenAddress, baseAmount);
+          } else {
+            rewardTokenUSDPrice = await this.dexService.getSwapAmountOut(rewardTokenAddress, this.config.addresses.tokens.USDT, baseAmount);
+          }
+
+          stakingTokenToRewardTokenRatio = stakingTokenUSDPrice.div(rewardTokenUSDPrice);
+        }
+      }
+      const result = apr.mul(stakingTokenToRewardTokenRatio.div(1e18));
+      this.logger.log('debug', `RESULT: ${result.toString()}`);
+      return result;
+    } catch(err) {
+     this.logger.log('debug', `getAnnualPercentageRate ERROR: ${err}`);
+     throw new Error('Server Error');
+    }
   }
 
   async getStakingMinAmount() : Promise<BigDecimal> {
@@ -134,7 +189,6 @@ export class StakingService {
 
   async getWithdrawLockPeriod() : Promise<number> {
     const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
-    
     try {
       this.logger.log('debug', `RETRIEVING WITHDRAW LOCK PERIOD`);
       const result = await stakingContract.withdrawLockPeriod();

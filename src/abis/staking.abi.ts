@@ -1,4 +1,9 @@
 export const StakingABI = [
+  'function getStakingTokenAddress() public view returns (address)',
+  'function getRewardTokenAddress() public view returns (address)',
+  'function stakingToken() public view returns (IERC20)',
+  'function rewardToken() public view returns (IERC20)',
+  'function rewardPerToken() public view returns (uint256)',
   'function stakingMinAmount() public view returns (uint256)',
   'function stakingMaxAmount() public view returns (uint256)',
   'function withdrawLockPeriod() public view returns (uint256)',

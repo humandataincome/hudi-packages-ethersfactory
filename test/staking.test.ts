@@ -9,10 +9,10 @@ const USER_PRIVATE_KEY   = isTestnet ? '' : '';
 async function main() {
 
     const stakingService = new StakingService(CONFIG, CONFIG.addresses.staking);
-    const amountToStake  = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.02')))
+    const amountToStake  = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.02'), 18));
     try {
         // GET STAKING APR
-        const APR = await stakingService.getAPR(); 
+        await stakingService.getAnnualPercentageRate(); 
 
         // GET STAKING MIN AMOUNT
         await stakingService.getStakingMinAmount(); 

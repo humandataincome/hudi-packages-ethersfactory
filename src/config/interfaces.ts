@@ -17,7 +17,7 @@ export interface Config {
     pancakeSwapLocker: string,
     prediction: string,
     staking: string,
-    lpTokenStaking: string
+    stakingLPToken: string
   },
   jsonRpcUrl: string,
   explorerUrl: string,

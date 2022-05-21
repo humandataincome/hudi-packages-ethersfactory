@@ -18,7 +18,7 @@ export const BSC_CONFIG: Config = {
     pancakeSwapLocker: '',
     prediction: '0x18B2A687610328590Bc8F2e5fEdDe3b582A49cdA',
     staking:'',
-    lpTokenStaking: ''
+    stakingLPToken: ''
   },
   jsonRpcUrl: 'https://bsc-dataseed.binance.org',
   explorerUrl: 'https://bscscan.com',
@@ -44,7 +44,7 @@ export const ETH_CONFIG1 = (jsonRpcApiKey?: string): Config => {
       pancakeSwapLocker: '',
       prediction: '',
       staking:'',
-      lpTokenStaking: ''
+      stakingLPToken: ''
     },
     jsonRpcUrl: `https://mainnet.infura.io/v3/${jsonRpcApiKey}`,
     explorerUrl: 'https://etherscan.io/',
@@ -71,8 +71,8 @@ export const BSCTEST_CONFIG: Config = {
     miniLiquidityProvider: '0xbe972944adf82787872baf9Cf22004d7B50B318D',
     pancakeSwapLocker: '0xDea76607d9ba4FdFA04eeE51f4360fEE2B38ed0a',
     prediction: '',
-    staking: '0xf164570775608CFE01236F3A6a7F5859C222BfE2',
-    lpTokenStaking: ''
+    staking: '0xA961d73c4EaFCfbdfe1F67b2D8cAea0F93b823b8',//'0xf164570775608CFE01236F3A6a7F5859C222BfE2',
+    stakingLPToken: '0x95478a51D535810CBD59E2A2B70F2962a1dc6732'
   },
   jsonRpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
   explorerUrl: 'https://testnet.bscscan.com',

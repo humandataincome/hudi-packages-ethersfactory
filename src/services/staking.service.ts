@@ -102,6 +102,7 @@ export class StakingService {
       const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
 
       // ONLY FOR DEBUG PURPOSE
+      this.logger.log('debug', `stakingContractAddress: ${this.stakingContractAddress}`);
       const stakingTokenAddress: string = await stakingContract.getStakingTokenAddress();
       this.logger.log('debug', `stakingTokenAddress: ${stakingTokenAddress}`);
       const rewardTokenAddress: string = await stakingContract.getRewardTokenAddress();

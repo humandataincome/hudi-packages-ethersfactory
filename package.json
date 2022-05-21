@@ -30,6 +30,7 @@
     "test:omniswap": "ts-node test/omniswap.test.ts",
     "test:mlp": "ts-node test/mlp.test.ts",
     "test:staking": "ts-node test/staking.test.ts",
+    "test:lp-token": "ts-node test/lp-token.test.ts",
     "prepublish": "npm run build"
   },
   "devDependencies": {

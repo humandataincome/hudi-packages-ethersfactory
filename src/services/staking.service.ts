@@ -128,41 +128,12 @@ export class StakingService {
       const apr = rewardPerToken.mul(365).mul(24).mul(60).mul(60);
       this.logger.log('debug', `fixed apr: ${apr.toString()}`);
       
-      const baseAmount = new BigDecimal(1);
-      let stakingTokenToRewardTokenRatio: BigDecimal;
+      const stakingTokenToRewardTokenRatio = await this.lpTokenService.getTokensRatio(stakingTokenAddress, rewardTokenAddress);
 
-      // CALCULATE STAKING TOKEN / REWARD TOKEN RATIO
-      if (stakingTokenAddress === rewardTokenAddress) {
-        stakingTokenToRewardTokenRatio = new BigDecimal(1);
-      }
-      else {
-        const isStakingTokenLP  = await this.lpTokenService.isLPToken(stakingTokenAddress);
-       
-        const isRewardTokenLP   = await this.lpTokenService.isLPToken(rewardTokenAddress);
-
-        if (!isStakingTokenLP && !isRewardTokenLP) {
-          stakingTokenToRewardTokenRatio = await this.dexService.getSwapAmountOut(stakingTokenAddress, rewardTokenAddress, baseAmount);
-        } else {
-          let stakingTokenUSDPrice;
-          if (isStakingTokenLP) {
-            stakingTokenUSDPrice = await this.lpTokenService.getUSDTEquivalent(stakingTokenAddress, baseAmount);
-          } else {
-            stakingTokenUSDPrice = await this.dexService.getSwapAmountOut(stakingTokenAddress, this.config.addresses.tokens.USDT, baseAmount);
-          }
-
-          let rewardTokenUSDPrice;
-          if (isRewardTokenLP) {
-            rewardTokenUSDPrice = await this.lpTokenService.getUSDTEquivalent(rewardTokenAddress, baseAmount);
-          } else {
-            rewardTokenUSDPrice = await this.dexService.getSwapAmountOut(rewardTokenAddress, this.config.addresses.tokens.USDT, baseAmount);
-          }
-
-          stakingTokenToRewardTokenRatio = stakingTokenUSDPrice.div(rewardTokenUSDPrice);
-        }
-      }
       const result = apr.mul(stakingTokenToRewardTokenRatio);
       this.logger.log('debug', `RESULT: ${result.toString()}`);
       return result;
+      
     } catch(err) {
      this.logger.log('debug', `getAnnualPercentageRate ERROR: ${err}`);
      throw new Error('Server Error');

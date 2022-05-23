@@ -5,7 +5,6 @@ import { Signer } from '@ethersproject/abstract-signer';
 import { EvmFactory } from './evm.factory';
 import Logger from '../utils/logger';
 import * as ethers from 'ethers';
-import { DexService } from './dex.service';
 import { LPTokenService } from './lp-token.service';
 
 export class Stake {
@@ -16,7 +15,6 @@ export class StakingService {
   private logger = new Logger(StakingService.name);
   private config: Config;
   private factory: EvmFactory;
-  private dexService: DexService;
   private lpTokenService: LPTokenService;
   stakingContractAddress: string;
 
@@ -24,7 +22,6 @@ export class StakingService {
     this.config = config;
     this.factory = new EvmFactory(config);
     this.stakingContractAddress = stakingContractAddress;
-    this.dexService = new DexService(config)
     this.lpTokenService = new LPTokenService(config);
   }
 
@@ -43,7 +40,7 @@ export class StakingService {
 
     this.logger.log('debug', `STAKING TOKEN ADDRESS IS: ${stakingTokenAddress}`);
 
-    // APPROVE THE CONTRACT TO SPEND LPTOKENS
+    // APPROVE THE CONTRACT TO SPEND STAKING TOKEN
     const allowance = await stakingToken.allowance(signerAddress, this.stakingContractAddress);
     this.logger.log('debug', `CONTRACT ALLOWANCE FOR STAKING TOKEN IS: ${allowance.toString()}`);
 
@@ -189,7 +186,7 @@ export class StakingService {
 
     try {
       this.logger.log('debug', `RETRIEVING USER STAKING INFO`);
-      const result = await stakingContract.connect(signer).getStakeInfo();
+      const result = await stakingContract.getStakeInfo();
       this.logger.log('debug', `RESULT: ${result}`);
       return {
         balance: BigDecimal.fromBigNumber(result.balance, 18),
@@ -215,7 +212,7 @@ export class StakingService {
 
     try {
       this.logger.log('debug', `START TO WITHDRAW...`);
-      const tx = await stakingContract.connect(signer).withdraw(amountToWithDraw.toBigNumber(18));
+      const tx = await stakingContract.withdraw(amountToWithDraw.toBigNumber(18));
       await tx.wait();
       this.logger.log('debug', 'DONE');
       return true;
@@ -232,7 +229,7 @@ export class StakingService {
 
     try {
       this.logger.log('debug', `START TO CLAIM REWARDS...`);
-      const tx = await stakingContract.connect(signer).claimRewards();
+      const tx = await stakingContract.claimRewards();
       await tx.wait();
       this.logger.log('debug', 'DONE');
       return true;
@@ -249,7 +246,7 @@ export class StakingService {
 
     try {
       this.logger.log('debug', `START TO WITHDRAW AND CLAIM...`);
-      const tx = await stakingContract.connect(signer).withdrawAndClaim();
+      const tx = await stakingContract.withdrawAndClaim();
       await tx.wait();
       this.logger.log('debug', 'DONE');
       return true;

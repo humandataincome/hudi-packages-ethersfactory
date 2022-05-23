@@ -4,7 +4,7 @@ const CONFIG             = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
 
 async function main() {
   const lptokeService = new LPTokenService(CONFIG);
-  const token1 = CONFIG.addresses.tokens.CAKELP;
+  const token1 = CONFIG.addresses.tokens.WBNBHUDI;
   const token2 = CONFIG.addresses.tokens.HUDI;
   const result = await lptokeService.getTokensRatio(token1, token2);
 }

@@ -65,6 +65,7 @@ export class LPTokenService {
     this.logger.log('debug', `reserves: ${util.inspect({reserve0: reserves[0].toString(), reserve1: reserves[1].toString()})}`);
     const amount0 = reserve0.mul(poolShare);
     const amount1 = reserve1.mul(poolShare);
+
     const amount0USDPrice = await this.dexService.getSwapAmountOut(token0, this.config.addresses.tokens.USDT, amount0);
     const amount1USDPrice = await this.dexService.getSwapAmountOut(token1, this.config.addresses.tokens.USDT, amount1);
 
@@ -83,7 +84,7 @@ export class LPTokenService {
     }
     else {
       const isStakingTokenLP  = await this.isLPToken(tokenAddress1);
-      
+
       const isRewardTokenLP   = await this.isLPToken(tokenAddress2);
 
       if (!isStakingTokenLP && !isRewardTokenLP) {

@@ -9,7 +9,6 @@ export interface Config {
       HUDI: string,
       USDT: string,
       BUSD: string,
-      CAKELP: string,
       WBNBHUDI: string
     },
     proxyUtils: string,

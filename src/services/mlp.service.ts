@@ -45,7 +45,7 @@ export class MiniLiquidityProviderService {
     const mlpContract     = this.factory.getContract(this.config.addresses.miniLiquidityProvider, MiniLiquidityProviderABI).connect(signer);
     const routerContract  = this.factory.getContract(this.config.addresses.dexRouter, DexRouter02ABI).connect(signer);
     const lpTokenAddress  = await mlpContract.getLpTokenAddress();
-    const lpToken         = this.factory.getContract(this.config.addresses.tokens.CAKELP, ERC20ABI).connect(signer);
+    const lpToken         = this.factory.getContract(this.config.addresses.tokens.WBNBHUDI, ERC20ABI).connect(signer);
     const WETH            = await routerContract.WETH();
     const HUDI            = this.config.addresses.tokens.HUDI
 

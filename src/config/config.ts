@@ -10,7 +10,6 @@ export const BSC_CONFIG: Config = {
       HUDI: '0x83d8Ea5A4650B68Cd2b57846783d86DF940F7458',
       USDT: '0x55d398326f99059fF775485246999027B3197955',
       BUSD: '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
-      CAKELP: '0x6de320CbC328202B7eC2aBFf6127B16702C702fa',
       WBNBHUDI: '0x9428d7F0660B1Ec8E42930c08443880F8F663875',
     },
     proxyUtils: '0xFC308b8346198ba98b166282BbE01eCEF94E50e6',
@@ -37,7 +36,6 @@ export const ETH_CONFIG1 = (jsonRpcApiKey?: string): Config => {
         WBNB: '',
         HUDI: '',
         BUSD: '',
-        CAKELP: '',
         WBNBHUDI: ''
       },
       proxyUtils: '',
@@ -64,8 +62,7 @@ export const BSCTEST_CONFIG: Config = {
       HUDI: '0x220fc122CcB27cA8B742a6520237612C1d7D01aB',
       USDT: '0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684',
       BUSD: '0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee',
-      CAKELP: '0x6de320CbC328202B7eC2aBFf6127B16702C702fa',
-      WBNBHUDI: '0xED645e63B27E2b8420154e2a38Df922684571fe0',
+      WBNBHUDI: '0x6de320CbC328202B7eC2aBFf6127B16702C702fa',
     },
     proxyUtils: '0x7ba8b8286359e10C4537A76006bEbf0B8Ae0a6A6',
 
@@ -75,7 +72,7 @@ export const BSCTEST_CONFIG: Config = {
     pancakeSwapLocker: '0xDea76607d9ba4FdFA04eeE51f4360fEE2B38ed0a',
     prediction: '',
     staking: '0xA961d73c4EaFCfbdfe1F67b2D8cAea0F93b823b8',//'0xf164570775608CFE01236F3A6a7F5859C222BfE2',
-    stakingLPToken: '0x95478a51D535810CBD59E2A2B70F2962a1dc6732'
+    stakingLPToken: '0xB3C6960241000eF53B507e454ebE8e94a3304e15'
   },
   jsonRpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
   explorerUrl: 'https://testnet.bscscan.com',

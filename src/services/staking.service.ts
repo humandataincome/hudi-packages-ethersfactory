@@ -99,17 +99,22 @@ export class StakingService {
   async getAnnualPercentageRate() : Promise<BigDecimal> {
     try {
       this.logger.log('debug', `RETRIEVING STAKING APR`);
-      const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
 
-      // ONLY FOR DEBUG PURPOSE
+      const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
       this.logger.log('debug', `stakingContractAddress: ${this.stakingContractAddress}`);
       const stakingTokenAddress: string = await stakingContract.getStakingTokenAddress();
+      const stakingToken    = this.factory.getContract(stakingTokenAddress, ERC20ABI);
+      const stakingTokenContractBalance: ethers.BigNumber = await stakingToken.balanceOf(this.stakingContractAddress);
+      if(stakingTokenContractBalance.isZero()) {
+        return new BigDecimal(0);
+      }
+
+      // ONLY FOR DEBUG PURPOSE
       this.logger.log('debug', `stakingTokenAddress: ${stakingTokenAddress}`);
       const rewardTokenAddress: string = await stakingContract.getRewardTokenAddress();
       this.logger.log('debug', `rewardTokenAddress: ${rewardTokenAddress}`);
 
-      const stakingToken    = this.factory.getContract(stakingTokenAddress, ERC20ABI);
-      const stakingTokenContractBalance = await stakingToken.balanceOf(this.stakingContractAddress);
+      
       this.logger.log('debug', `contract stakingTokenContractBalance: ${stakingTokenContractBalance.toString()}`);
       const rewardToken = this.factory.getContract(rewardTokenAddress, ERC20ABI);
       const rewardTokenContractBalance = await rewardToken.balanceOf(this.stakingContractAddress);

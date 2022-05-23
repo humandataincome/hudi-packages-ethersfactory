@@ -1,11 +1,11 @@
 import { BSCTEST_CONFIG, BSC_CONFIG, LPTokenService } from '../src';
-const isTestnet          = true;
+const isTestnet          = false;
 const CONFIG             = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
 
 async function main() {
   const lptokeService = new LPTokenService(CONFIG);
-  const token1 = '0xED645e63B27E2b8420154e2a38Df922684571fe0'; //WBNB/HUDI Testnet
-  const token2 = BSCTEST_CONFIG.addresses.tokens.HUDI;
+  const token1 = CONFIG.addresses.tokens.WBNBHUDI;
+  const token2 = CONFIG.addresses.tokens.HUDI;
   const result = await lptokeService.getTokensRatio(token1, token2);
 }
 

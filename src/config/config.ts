@@ -11,6 +11,7 @@ export const BSC_CONFIG: Config = {
       USDT: '0x55d398326f99059fF775485246999027B3197955',
       BUSD: '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
       CAKELP: '0x6de320CbC328202B7eC2aBFf6127B16702C702fa',
+      WBNBHUDI: '0x9428d7F0660B1Ec8E42930c08443880F8F663875',
     },
     proxyUtils: '0xFC308b8346198ba98b166282BbE01eCEF94E50e6',
     dexRouter: '0x10ED43C718714eb63d5aA57B78B54704E256024E',
@@ -37,6 +38,7 @@ export const ETH_CONFIG1 = (jsonRpcApiKey?: string): Config => {
         HUDI: '',
         BUSD: '',
         CAKELP: '',
+        WBNBHUDI: ''
       },
       proxyUtils: '',
       dexRouter: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
@@ -63,6 +65,7 @@ export const BSCTEST_CONFIG: Config = {
       USDT: '0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684',
       BUSD: '0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee',
       CAKELP: '0x6de320CbC328202B7eC2aBFf6127B16702C702fa',
+      WBNBHUDI: '0xED645e63B27E2b8420154e2a38Df922684571fe0',
     },
     proxyUtils: '0x7ba8b8286359e10C4537A76006bEbf0B8Ae0a6A6',
 

@@ -95,14 +95,12 @@ export class LPTokenService {
         } else {
           stakingTokenUSDPrice = await this.dexService.getSwapAmountOut(tokenAddress1, this.config.addresses.tokens.USDT, baseAmount);
         }
-
         let rewardTokenUSDPrice;
         if (isRewardTokenLP) {
           rewardTokenUSDPrice = await this.getUSDTEquivalent(tokenAddress2, baseAmount);
         } else {
           rewardTokenUSDPrice = await this.dexService.getSwapAmountOut(tokenAddress2, this.config.addresses.tokens.USDT, baseAmount);
         }
-
         stakingTokenToRewardTokenRatio = stakingTokenUSDPrice.div(rewardTokenUSDPrice);
       }
     }

@@ -5,10 +5,10 @@ import { StakingService } from '../src';
 
 const isTestnet          = true;
 const CONFIG             = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
-const USER_PRIVATE_KEY   = isTestnet ? '4118c712962d9cb0cc9abb9b5ae3f5a54350847beb29e48923e5974eacd43cc3' : '0xf6f22a1637ed44cbbfda66aaa15d471bddb2703613749683e3971f14e4416b86';
+const USER_PRIVATE_KEY   = isTestnet ? '' : '';
 async function main() {
 
-    const stakingService = new StakingService(CONFIG, CONFIG.addresses.stakingLPToken);
+    const stakingService = new StakingService(CONFIG, CONFIG.addresses.staking);
     const amountToStake  = new BigDecimal(BigDecimal.fromBigNumber(utils.parseEther('0.02'), 18));
     try {
         // // GET STAKING APR
@@ -33,7 +33,7 @@ async function main() {
         // STAKE
         await stakingService.stake(USER_PRIVATE_KEY, amountToStake)
 
-        // GET STAKING TOTAL SUPPLYS
+        // GET STAKING TOTAL SUPPLY
         totalsupply = await stakingService.getStakingTotalSupply();
 
         // GET STAKE
@@ -51,11 +51,19 @@ async function main() {
         stake = await stakingService.getStakeInfo(USER_PRIVATE_KEY);
         console.log('STAKE', stake?.balance)
 
+        // WITHDRAW ENTIRE AMOUNT
+        if(stake && stake.balance) {
+            await stakingService.withdraw(USER_PRIVATE_KEY, stake.balance);
+        }
+        
+        // GET STAKING TOTAL SUPPLY
+        totalsupply = await stakingService.getStakingTotalSupply();
+
+        // EXECUTE ANOTHER STAKE
+        await stakingService.stake(USER_PRIVATE_KEY, amountToStake)
+
         // WITHDRAW and CLAIM
         await stakingService.withdrawAndClaim(USER_PRIVATE_KEY)
-
-        // GET STAKING TOTAL SUPPLYS
-        totalsupply = await stakingService.getStakingTotalSupply();
         process.exit(0)
     }
     catch(err:any) {

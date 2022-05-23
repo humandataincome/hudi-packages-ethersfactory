@@ -71,8 +71,8 @@ export const BSCTEST_CONFIG: Config = {
     miniLiquidityProvider: '0xbe972944adf82787872baf9Cf22004d7B50B318D',
     pancakeSwapLocker: '0xDea76607d9ba4FdFA04eeE51f4360fEE2B38ed0a',
     prediction: '',
-    staking: '0xA961d73c4EaFCfbdfe1F67b2D8cAea0F93b823b8',//'0xf164570775608CFE01236F3A6a7F5859C222BfE2',
-    stakingLPToken: '0xB3C6960241000eF53B507e454ebE8e94a3304e15'
+    staking: '0x8553eaF59DAe095a417e45C1feb5A1Cc37C0f6e8',
+    stakingLPToken: '0x8d2e7605D60184D34eaF2AA978371318952ca9bd'
   },
   jsonRpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
   explorerUrl: 'https://testnet.bscscan.com',

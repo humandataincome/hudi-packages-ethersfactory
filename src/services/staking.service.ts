@@ -101,7 +101,9 @@ export class StakingService {
       const stakingTokenAddress: string = await stakingContract.getStakingTokenAddress();
       const stakingToken    = this.factory.getContract(stakingTokenAddress, ERC20ABI);
       const stakingTokenContractBalance: ethers.BigNumber = await stakingToken.balanceOf(this.stakingContractAddress);
-      if(stakingTokenContractBalance.isZero()) {
+      const stakingTotalSupply = BigDecimal.fromBigNumber(await stakingContract.getStakingTotalSupply(), 18);
+      this.logger.log('debug', `contract stakingTotalSupply: ${stakingTotalSupply.toString()}`);
+      if(stakingTotalSupply.isZero()) {
         return new BigDecimal(0);
       }
 
@@ -115,8 +117,7 @@ export class StakingService {
       const rewardTokenContractBalance = await rewardToken.balanceOf(this.stakingContractAddress);
       this.logger.log('debug', `contract rewardTokenContractBalance: ${rewardTokenContractBalance.toString()}`);
 
-      const stakingTotalSupply = BigDecimal.fromBigNumber(await stakingContract.getStakingTotalSupply(), 18);
-      this.logger.log('debug', `contract stakingTotalSupply: ${stakingTotalSupply.toString()}`);
+      
 
       const rewardRate = (BigDecimal.fromBigNumber(await stakingContract.rewardRate(), 18));
       this.logger.log('debug', `rewardRate: ${rewardRate.toString()}`);

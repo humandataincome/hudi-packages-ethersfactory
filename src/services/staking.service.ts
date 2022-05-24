@@ -93,31 +93,22 @@ export class StakingService {
     }
   }
 
-  async getAnnualPercentageRate(): Promise<BigDecimal> {
+  async getAnnualPercentageRate() : Promise<BigDecimal> {
     try {
       this.logger.log('debug', `RETRIEVING STAKING APR`);
 
       const stakingContract = this.factory.getContract(this.stakingContractAddress, StakingABI).connect(this.factory.provider);
       this.logger.log('debug', `stakingContractAddress: ${this.stakingContractAddress}`);
       const stakingTokenAddress: string = await stakingContract.getStakingTokenAddress();
-      const stakingToken = this.factory.getContract(stakingTokenAddress, ERC20ABI);
-      const stakingTokenContractBalance: ethers.BigNumber = await stakingToken.balanceOf(this.stakingContractAddress);
       const stakingTotalSupply = BigDecimal.fromBigNumber(await stakingContract.getStakingTotalSupply(), 18);
       this.logger.log('debug', `contract stakingTotalSupply: ${stakingTotalSupply.toString()}`);
-      if (stakingTotalSupply.isZero()) {
+      
+      if(stakingTotalSupply.isZero()) {
         return new BigDecimal(0);
       }
 
-      // ONLY FOR DEBUG PURPOSE
-      this.logger.log('debug', `stakingTokenAddress: ${stakingTokenAddress}`);
       const rewardTokenAddress: string = await stakingContract.getRewardTokenAddress();
       this.logger.log('debug', `rewardTokenAddress: ${rewardTokenAddress}`);
-
-      this.logger.log('debug', `contract stakingTokenContractBalance: ${stakingTokenContractBalance.toString()}`);
-      const rewardToken = this.factory.getContract(rewardTokenAddress, ERC20ABI);
-      const rewardTokenContractBalance = await rewardToken.balanceOf(this.stakingContractAddress);
-      this.logger.log('debug', `contract rewardTokenContractBalance: ${rewardTokenContractBalance.toString()}`);
-
 
       const rewardRate = (BigDecimal.fromBigNumber(await stakingContract.rewardRate(), 18));
       this.logger.log('debug', `rewardRate: ${rewardRate.toString()}`);
@@ -135,8 +126,8 @@ export class StakingService {
       return result;
 
     } catch (err) {
-      this.logger.log('debug', `getAnnualPercentageRate ERROR: ${err}`);
-      throw new Error('Server Error');
+     this.logger.log('debug', `getAnnualPercentageRate ERROR: ${err}`);
+     throw new Error('Server Error');
     }
   }
 

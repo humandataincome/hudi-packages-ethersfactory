@@ -17,8 +17,8 @@ export const BSC_CONFIG: Config = {
     miniLiquidityProvider: '0xe62B82b85E898FF1b8B2A960C234B17F8DB4C0dF',
     pancakeSwapLocker: '',
     prediction: '0x18B2A687610328590Bc8F2e5fEdDe3b582A49cdA',
-    staking:'',
-    stakingLPToken: ''
+    staking:'0x8f82FDFBE3fa9746a6854d7dbD7dFAAd49FA1E91',
+    stakingLPToken: '0x60fC0BF9B2d46396b82aeB996a32B1520b200AF1'
   },
   jsonRpcUrl: 'https://bsc-dataseed.binance.org',
   explorerUrl: 'https://bscscan.com',

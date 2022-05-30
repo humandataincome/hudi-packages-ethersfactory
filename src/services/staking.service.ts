@@ -121,7 +121,7 @@ export class StakingService {
 
       const stakingTokenToRewardTokenRatio = await this.lpTokenService.getTokensRatio(stakingTokenAddress, rewardTokenAddress);
 
-      const result = apr.mul(stakingTokenToRewardTokenRatio);
+      const result = apr.div(stakingTokenToRewardTokenRatio);
       this.logger.log('debug', `RESULT: ${result.toString()}`);
       return result;
 

@@ -7,4 +7,5 @@ export * from './weth.abi';
 export * from './proxy-utils.abi';
 export * from './mlp.abi';
 export * from './pancakeswap-locker.abi';
-export * from './staking.abi'
+export * from './staking.abi';
+export * from './vesting.abi';

@@ -17,12 +17,14 @@ export const BSC_CONFIG: Config = {
     miniLiquidityProvider: '0xe62B82b85E898FF1b8B2A960C234B17F8DB4C0dF',
     pancakeSwapLocker: '',
     prediction: '0x18B2A687610328590Bc8F2e5fEdDe3b582A49cdA',
-    staking:'0x8f82FDFBE3fa9746a6854d7dbD7dFAAd49FA1E91',
-    stakingLPToken: '0x60fC0BF9B2d46396b82aeB996a32B1520b200AF1'
+    staking: '0x8f82FDFBE3fa9746a6854d7dbD7dFAAd49FA1E91',
+    stakingLPToken: '0x60fC0BF9B2d46396b82aeB996a32B1520b200AF1',
+    treasury: '',
   },
   jsonRpcUrl: 'https://bsc-dataseed.binance.org',
   explorerUrl: 'https://bscscan.com',
-  dexSubgraphUrl: 'https://bsc.streamingfast.io/subgraphs/name/pancakeswap/exchange-v2',
+  dexSubgraphUrl:
+    'https://bsc.streamingfast.io/subgraphs/name/pancakeswap/exchange-v2',
 };
 
 export const ETH_CONFIG1 = (jsonRpcApiKey?: string): Config => {
@@ -36,19 +38,21 @@ export const ETH_CONFIG1 = (jsonRpcApiKey?: string): Config => {
         WBNB: '',
         HUDI: '',
         BUSD: '',
-        WBNBHUDI: ''
+        WBNBHUDI: '',
       },
       proxyUtils: '',
       dexRouter: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
       miniLiquidityProvider: '',
       pancakeSwapLocker: '',
       prediction: '',
-      staking:'',
-      stakingLPToken: ''
+      staking: '',
+      stakingLPToken: '',
+      treasury: '',
     },
     jsonRpcUrl: `https://mainnet.infura.io/v3/${jsonRpcApiKey}`,
     explorerUrl: 'https://etherscan.io/',
-    dexSubgraphUrl: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
+    dexSubgraphUrl:
+      'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2',
   };
 };
 
@@ -72,15 +76,11 @@ export const BSCTEST_CONFIG: Config = {
     pancakeSwapLocker: '0xDea76607d9ba4FdFA04eeE51f4360fEE2B38ed0a',
     prediction: '',
     staking: '0x8553eaF59DAe095a417e45C1feb5A1Cc37C0f6e8',
-    stakingLPToken: '0x8d2e7605D60184D34eaF2AA978371318952ca9bd'
+    stakingLPToken: '0x8d2e7605D60184D34eaF2AA978371318952ca9bd',
+    treasury: '0x4251B15d245b6C7F7fde1259a885527625a3cA6c',
   },
   jsonRpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
   explorerUrl: 'https://testnet.bscscan.com',
-  dexSubgraphUrl: 'https://bsc.streamingfast.io/subgraphs/name/pancakeswap/exchange-v2',
+  dexSubgraphUrl:
+    'https://bsc.streamingfast.io/subgraphs/name/pancakeswap/exchange-v2',
 };
-
-
-
-
-
-

@@ -12,13 +12,9 @@ import { TreasuryService } from '../src';
 const isTestnet = true;
 const CONFIG = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
 
-const USER_PRIVATE_KEY = isTestnet
-  ? 'eee4b72903ca31ccaacf00f8abc0ef067a3b8f3d3995953b99ada04d539e99f8'
-  : '';
+const USER_PRIVATE_KEY = isTestnet ? '' : '';
 
-const TRUTH_HOLDER_PRIVATE_KEY = isTestnet
-  ? '4118c712962d9cb0cc9abb9b5ae3f5a54350847beb29e48923e5974eacd43cc3'
-  : '';
+const TRUTH_HOLDER_PRIVATE_KEY = isTestnet ? '' : '';
 
 async function main() {
   try {

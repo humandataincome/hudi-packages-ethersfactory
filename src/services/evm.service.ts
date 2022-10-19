@@ -81,4 +81,20 @@ export class EvmService {
       ethers.utils.defaultAbiCoder.encode(argTypes, argValues),
     );
   }
+
+  public static async parseTransactionLogs(
+    provider: ethers.providers.JsonRpcProvider,
+    transactionHash: string,
+    contractABI: string[],
+  ) {
+    const contractInterface = new ethers.utils.Interface(contractABI);
+    const rc = await provider.getTransactionReceipt(transactionHash);
+    return rc.logs.map((log: any) => {
+      try {
+        return { ...log, ...contractInterface.parseLog(log) };
+      } catch (e) {
+        return;
+      }
+    });
+  }
 }

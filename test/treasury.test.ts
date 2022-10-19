@@ -27,9 +27,15 @@ async function main() {
       BigDecimal.fromBigNumber(utils.parseEther('0.01'), 18),
     );
 
-    // TEST DEPOSIT
     const tokenService = new TokenService(CONFIG);
-    await treasuryService.deposit(USER_PRIVATE_KEY, amountToDeposit);
+
+    // TEST DEPOSIT
+    const txHash = await treasuryService.deposit(
+      USER_PRIVATE_KEY,
+      amountToDeposit,
+    );
+
+    console.log('TRANSACTION HASH:', txHash);
 
     console.log(
       'CONTRACT BALANCE',
@@ -39,16 +45,26 @@ async function main() {
       ),
     );
 
-    // TEST CLAIM
-    const id = 2;
-    const deadline = Math.floor((Date.now() + 86400000) / 1000);
-    await treasuryService.claim(
+    // READ DEPOSIT ARGUMENTS FROM THE TRANSACTION
+    const args = await treasuryService.decodeDepositByTxHash(
+      '0xf63fe162022df2e165db0ddc45640332024acddd29670a83379a7d590ee70a4b',
+    );
+    console.log('DEPOSIT ARGS', args);
+
+    // PREPARE SIGNE MESSAGE TO PASS TO THE CONTRACT
+    const id = 4;
+    const deadline = Math.floor((Date.now() + 86400000) / 1000); //ADD 1 DAY
+    const token = await treasuryService.encodeWithdrawToken(
       USER_PRIVATE_KEY,
-      TRUTH_HOLDER_PRIVATE_KEY,
       id,
+      TRUTH_HOLDER_PRIVATE_KEY,
       amountToDeposit,
       deadline,
     );
+    console.log('TOKEN', token);
+
+    // TEST WITHDRAW
+    await treasuryService.withdraw(USER_PRIVATE_KEY, token);
 
     console.log(
       'CONTRACT BALANCE',

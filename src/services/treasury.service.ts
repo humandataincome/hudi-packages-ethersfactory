@@ -11,6 +11,7 @@ export class TreasuryService {
   private logger = new Logger(TreasuryService.name);
   private config: Config;
   private factory: EvmFactory;
+  private tokenEncoding: BufferEncoding;
 
   treasuryContractAddress: string;
 
@@ -18,18 +19,19 @@ export class TreasuryService {
     this.config = config;
     this.factory = new EvmFactory(config);
     this.treasuryContractAddress = treasuryContractAddress;
+    this.tokenEncoding = 'base64';
   }
 
   /**
    *
    * @param signerOrPrivateKey signer for the transaction
    * @param amountToDeposit amount to deposit to the contract
-   * @returns transactionHash: string; from: string; amount: BigDecimal
+   * @returns transactionHash: string;
    */
   async deposit(
     signerOrPrivateKey: Signer | string,
     amountToDeposit: BigDecimal,
-  ): Promise<{ transactionHash: string; from: string; amount: BigDecimal }> {
+  ): Promise<string> {
     if (amountToDeposit.lt(0)) {
       throw new Error('AMOUNT MUST BE GREATHER THAN 0');
     }
@@ -50,7 +52,6 @@ export class TreasuryService {
     const treasuryToken = this.factory
       .getContract(treasuryTokenAddress, ERC20ABI)
       .connect(signer);
-
     this.logger.log(
       'debug',
       `TREASURY TOKEN ADDRESS IS: ${treasuryTokenAddress}`,
@@ -82,19 +83,10 @@ export class TreasuryService {
     try {
       this.logger.log('debug', `START TO DEPOSIT... `);
       const tx = await treasuryContract.transferIn(amount);
-      const rc = await tx.wait();
+      await tx.wait();
 
-      const event = rc.events.find((e: any) => e.event === 'TransferredIn');
-      const [from, amountTransferred] = event.args;
-      const result = {
-        transactionHash: tx.hash,
-        from,
-        amount: BigDecimal.fromBigNumber(amountTransferred),
-      };
       this.logger.log('debug', 'DONE');
-      this.logger.log('debug', 'RESULT: ' + JSON.stringify(result));
-
-      return result;
+      return tx.hash;
     } catch (err) {
       this.logger.log('debug', `deposit ERROR: ${err}`);
       throw new Error('Server Error');
@@ -103,45 +95,101 @@ export class TreasuryService {
 
   /**
    *
-   * @param signerOrPrivateKey signer for the transaction
-   * @param truthHolder this signer will sign the claim transaction
-   * @param id nonce for the transaction
-   * @param amount amount to claim
-   * @param deadline date fro the deadline in SECONDS
+   * @param signerOrPrivateKey caller for the transaction
+   * @param token encoded string contained message and signature
    */
-  async claim(
+  async withdraw(
     signerOrPrivateKey: Signer | string,
-    truthHolder: Signer | string,
-    id: number,
-    amount: BigDecimal,
-    deadline: number,
-  ) {
+    token: string,
+  ): Promise<boolean> {
     try {
-      // PREPARING THE MESSAGE
-      const to = await this.factory.getSigner(signerOrPrivateKey).getAddress();
-      const treasuryTokenAddress = this.config.addresses.tokens.HUDI;
-      const amountToClaim = amount.toBigNumber(18);
-      const argTypes = ['uint256', 'address', 'address', 'uint256', 'uint256'];
-      const argValues = [id, to, treasuryTokenAddress, amountToClaim, deadline];
-      const message = EvmService.getAbiEncodedArguments(argTypes, argValues);
-
-      // SIGN MESSAGE
       const user = this.factory.getSigner(signerOrPrivateKey);
-      const signer = this.factory.getSigner(truthHolder);
-      const signature = await signer.signMessage(message);
 
-      // CLAIM
+      // RETRIEVE THE MESSAGE AND THE SIGNATURE FROM THE TOKEN
+      const encoding = this.tokenEncoding;
+      const decoded = Buffer.from(token, encoding).toString();
+
+      const strArray = decoded.split('.');
+
+      const message = new Uint8Array(Buffer.from(strArray[0], encoding));
+      const signature = Buffer.from(strArray[1], encoding).toString();
+
+      // WITHDRAW
       const treasuryContract = this.factory
         .getContract(this.treasuryContractAddress, TreasuryABI)
         .connect(user);
 
-      this.logger.log('debug', `START TO CLAIM... `);
+      this.logger.log('debug', `WITHDRAW... `);
       const tx = await treasuryContract.transferOut(message, signature);
       await tx.wait();
       this.logger.log('debug', 'DONE');
+
+      return true;
     } catch (err) {
       this.logger.log('debug', `claim ERROR: ${err}`);
       throw new Error('Server Error');
     }
+  }
+
+  /**
+   *
+   * @param txHash the transaction hash
+   * @returns
+   */
+  async decodeDepositByTxHash(
+    txHash: string,
+  ): Promise<{ from: string; amount: BigDecimal } | null> {
+    const logs = await EvmService.parseTransactionLogs(
+      this.factory.provider,
+      txHash,
+      TreasuryABI,
+    );
+    const event = logs.find((x) => x && x.name == 'TransferredIn');
+    if (!event) {
+      return null;
+    }
+    const from = event.args['from'];
+    const amount = BigDecimal.fromBigNumber(event.args['amount'], 18);
+
+    return { from, amount };
+  }
+
+  /**
+   *
+   * @param signerOrPrivateKey caller for the transaction
+   * @param truthHolder this signer will sign the claim transaction
+   * @param id nonce for the transaction
+   * @param amount amount to claim
+   * @param deadline date fro the deadline in SECONDS
+   * @returns token: the encoded string containing the message and the signature
+   */
+  async encodeWithdrawToken(
+    signerOrPrivateKey: Signer | string,
+    id: number,
+    truthHolder: Signer | string,
+    amount: BigDecimal,
+    deadline: number,
+  ): Promise<string> {
+    // PREPARING THE MESSAGE
+    const to = await this.factory.getSigner(signerOrPrivateKey).getAddress();
+    const treasuryTokenAddress = this.config.addresses.tokens.HUDI;
+    const amountToClaim = amount.toBigNumber(18);
+    const argTypes = ['uint256', 'address', 'address', 'uint256', 'uint256'];
+    const argValues = [id, to, treasuryTokenAddress, amountToClaim, deadline];
+    const message = EvmService.getAbiEncodedArguments(argTypes, argValues);
+
+    // SIGN MESSAGE
+    const signer = this.factory.getSigner(truthHolder);
+    const signature = await signer.signMessage(message);
+
+    // CREATE TOKEN WITH MESSAGE AND SIGNATURE
+    const encoding = 'base64';
+    const messageEnc = Buffer.from(message).toString(encoding);
+    const signatureEnc = Buffer.from(signature).toString(encoding);
+    const token = Buffer.from(`${messageEnc}.${signatureEnc}`).toString(
+      encoding,
+    );
+
+    return token;
   }
 }

@@ -8,5 +8,5 @@ export * from './token.service';
 export * from './lp-token.service';
 export * from './dex-info.service';
 export * from './staking.service';
-
+export * from './treasury.service';
 export * from './interfaces';

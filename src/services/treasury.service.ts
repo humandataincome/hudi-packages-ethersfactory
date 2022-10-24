@@ -156,22 +156,21 @@ export class TreasuryService {
 
   /**
    *
-   * @param signerOrPrivateKey caller for the transaction
+   * @param to wallet user address
    * @param truthHolder this signer will sign the claim transaction
    * @param id nonce for the transaction
    * @param amount amount to claim
-   * @param deadline date fro the deadline in SECONDS
+   * @param deadline date till the deadline in SECONDS
    * @returns token: the encoded string containing the message and the signature
    */
   async encodeWithdrawToken(
-    signerOrPrivateKey: Signer | string,
+    to: string,
     id: number,
     truthHolder: Signer | string,
     amount: BigDecimal,
     deadline: number,
   ): Promise<string> {
     // PREPARING THE MESSAGE
-    const to = await this.factory.getSigner(signerOrPrivateKey).getAddress();
     const treasuryTokenAddress = this.config.addresses.tokens.HUDI;
     const amountToClaim = amount.toBigNumber(18);
     const argTypes = ['uint256', 'address', 'address', 'uint256', 'uint256'];
@@ -186,10 +185,8 @@ export class TreasuryService {
     const encoding = 'base64';
     const messageEnc = Buffer.from(message).toString(encoding);
     const signatureEnc = Buffer.from(signature).toString(encoding);
-    const token = Buffer.from(`${messageEnc}.${signatureEnc}`).toString(
+    return Buffer.from(`${messageEnc}.${signatureEnc}`).toString(
       encoding,
     );
-
-    return token;
   }
 }

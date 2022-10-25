@@ -165,7 +165,7 @@ export class TreasuryService {
    */
   async encodeWithdrawToken(
     signerOrPrivateKey: Signer | string,
-    id: number,
+    id: ethers.BigNumber,
     truthHolder: Signer | string,
     amount: BigDecimal,
     deadline: number,

@@ -1,4 +1,4 @@
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import {
   BigDecimal,
   BSC_CONFIG,
@@ -56,7 +56,7 @@ async function main() {
     const deadline = Math.floor((Date.now() + 86400000) / 1000); //ADD 1 DAY
     const token = await treasuryService.encodeWithdrawToken(
       USER_PRIVATE_KEY,
-      id,
+      BigNumber.from(id),
       TRUTH_HOLDER_PRIVATE_KEY,
       amountToDeposit,
       deadline,

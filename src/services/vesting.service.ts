@@ -28,7 +28,7 @@ export class VestingService {
   }
   /**
    *
-   * @param signerOrPrivateKey the signer that will create the vesting
+   * @param ownerSigner the signer that will handle the vesting
    * @param destinationWalletAddress the wallet deposit address of the vetsing
    * @param totalLockedValue the value to lock
    * @param releaseValue the value per time that will be released
@@ -37,7 +37,7 @@ export class VestingService {
    * @param startTimestamp the start day of the vesting in timestamp format
    */
   async createVesting(
-    signerOrPrivateKey: Signer | string,
+    ownerSigner: Signer | string,
     destinationWalletAddress: string,
     totalLockedValue: BigDecimal,
     releaseValue: BigDecimal,
@@ -54,24 +54,31 @@ export class VestingService {
       `AMOUNT TO DEPOSIT IS: ${totalLockedValue.toString()}`,
     );
 
-    const signer = this.factory.getSigner(signerOrPrivateKey);
-    const signerAddress = await signer.getAddress();
+    const owner = this.factory.getSigner(ownerSigner);
     const vestingContract = this.factory
       .getContract(this.vestingContractAddress, VestingABI)
-      .connect(signer);
+      .connect(owner);
+
     const vestingTokenAddress = this.config.addresses.tokens.HUDI;
     const vestingToken = this.factory
       .getContract(vestingTokenAddress, ERC20ABI)
-      .connect(signer);
+      .connect(owner);
 
     this.logger.log(
       'debug',
       `VESTING TOKEN ADDRESS IS: ${vestingTokenAddress}`,
     );
 
+    const contractVestingToken = await vestingContract.getVestingToken();
+
+    this.logger.log(
+      'debug',
+      `CONTRACT VESTING TOKEN ADDRESS IS: ${contractVestingToken}`,
+    );
+
     // APPROVE THE CONTRACT TO SPEND VESTING TOKEN
     const allowance = await vestingToken.allowance(
-      signerAddress,
+      await owner.getAddress(),
       this.vestingContractAddress,
     );
     this.logger.log(
@@ -84,24 +91,25 @@ export class VestingService {
     if (allowance.lt(vestingAmount)) {
       this.logger.log('debug', `APPROVING ALLOWANCE...`);
       await (
-        await vestingToken.approve(
-          this.vestingContractAddress,
-          ethers.constants.MaxUint256,
-        )
+        await vestingToken
+          .connect(owner)
+          .approve(this.vestingContractAddress, ethers.constants.MaxUint256)
       ).wait();
       this.logger.log('debug', `CONTRACT APPROVED TO SPEND VESTING TOKEN`);
     }
 
     try {
       this.logger.log('debug', `START TO CREATE VESTING... `);
-      const tx = await vestingContract.createVesting(
-        destinationWalletAddress,
-        totalLockedValue.toBigNumber(18),
-        releaseValue.toBigNumber(18),
-        releasePeriod,
-        cliffPeriod,
-        startTimestamp,
-      );
+      const tx = await vestingContract
+        .connect(owner)
+        .createVesting(
+          destinationWalletAddress,
+          totalLockedValue.toBigNumber(18),
+          releaseValue.toBigNumber(18),
+          releasePeriod,
+          cliffPeriod,
+          startTimestamp,
+        );
       await tx.wait();
       this.logger.log('debug', 'DONE');
     } catch (err) {
@@ -113,7 +121,7 @@ export class VestingService {
   /**
    * returns the vesting ids for the contract caller
    * @param signerOrPrivateKey the signer for the contact call
-   * @returns
+   * @returns an array of vestingID
    */
   async getVestingIds(signerOrPrivateKey: Signer | string): Promise<string[]> {
     try {
@@ -132,7 +140,7 @@ export class VestingService {
    * returns the vesting by the vestingId
    * @param signerOrPrivateKey the signer for the contact call
    * @param vestingId // the id of the vesting
-   * @returns
+   * @returns the Vesting object
    */
   async getVesting(
     signerOrPrivateKey: Signer | string,
@@ -154,7 +162,7 @@ export class VestingService {
    * returns the amount that the caller can claim at the exact moment
    * @param signerOrPrivateKey the signer for the contact call
    * @param vestingId // the id of the vesting
-   * @returns
+   * @returns the amount of the next claim
    */
   async getClaimableAmount(
     signerOrPrivateKey: Signer | string,

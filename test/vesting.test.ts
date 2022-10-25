@@ -5,10 +5,8 @@ import { VestingService } from '../src';
 
 const isTestnet = true;
 const CONFIG = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
-const USER_PRIVATE_KEY = isTestnet
-  ? '0x37760c9680908cf409bdc63a9dda46ed4f9b6eeedf543554cefd202704cab4f0'
-  : '';
-const DESTINATION_WALLET_ADDRESS = '0x509303FcEF45e385B1E143eB8D46367c821CcfE2';
+const CONTRACT_OWNER_PRIVATE_KEY = isTestnet ? '' : '';
+const DESTINATION_WALLET_ADDRESS = '';
 
 async function main() {
   try {
@@ -24,7 +22,7 @@ async function main() {
     const startTimestamp = 1672531200000; // Sunday 1 January 2023 00:00:00
 
     await vestingService.createVesting(
-      USER_PRIVATE_KEY,
+      CONTRACT_OWNER_PRIVATE_KEY,
       DESTINATION_WALLET_ADDRESS,
       totalLockedValue,
       releaseValue,
@@ -33,24 +31,25 @@ async function main() {
       startTimestamp,
     );
 
-    // // GET THE ID OF THE CREATED VESTING
-    // const vestingIds = await vestingService.getVestingIds(USER_PRIVATE_KEY);
-    // console.log('vestingIds', vestingIds);
+    // GET THE ID OF THE CREATED VESTING
+    const vestingIds = await vestingService.getVestingIds(
+      CONTRACT_OWNER_PRIVATE_KEY,
+    );
+    console.log('vestingIds', vestingIds);
 
-    // // GET THE VESTING CREATED
-    // const vestingId = vestingIds[0];
-    // const vesting = await vestingService.getVesting(
-    //   USER_PRIVATE_KEY,
-    //   vestingId,
-    // );
-    // console.log('vesting', vesting);
+    // GET THE CREATED VESTING
+    const vesting = await vestingService.getVesting(
+      CONTRACT_OWNER_PRIVATE_KEY,
+      vestingIds[0],
+    );
+    console.log('vesting', vesting);
 
-    // // GET THE CLAIMABLE AMOUNT
-    // const amount = await vestingService.getClaimableAmount(
-    //   USER_PRIVATE_KEY,
-    //   vestingId,
-    // );
-    // console.log('claimableAmount', amount);
+    // GET THE CLAIMABLE AMOUNT
+    const amount = await vestingService.getClaimableAmount(
+      CONTRACT_OWNER_PRIVATE_KEY,
+      vestingIds[0],
+    );
+    console.log('claimableAmount', amount);
 
     process.exit(0);
   } catch (err: any) {

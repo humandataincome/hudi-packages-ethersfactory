@@ -77,7 +77,7 @@ export const BSCTEST_CONFIG: Config = {
     prediction: '',
     staking: '0x8553eaF59DAe095a417e45C1feb5A1Cc37C0f6e8',
     stakingLPToken: '0x8d2e7605D60184D34eaF2AA978371318952ca9bd',
-    vesting: '0x8E85df00B235F33F96B8f05d0e302f572EfAbc2a',
+    vesting: '0x3882A208810C0C6DBe8fa26a3C70E537F459f7f5',
   },
   jsonRpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
   explorerUrl: 'https://testnet.bscscan.com',

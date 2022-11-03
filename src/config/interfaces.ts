@@ -25,6 +25,7 @@ export interface Config {
     prediction: string;
     staking: string;
     stakingLPToken: string;
+    vesting: string;
     treasury: string;
   };
   jsonRpcUrl: string;

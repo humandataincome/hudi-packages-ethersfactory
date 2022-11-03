@@ -1,8 +1,9 @@
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import {
   BigDecimal,
   BSC_CONFIG,
-  BSCTEST_CONFIG, EvmFactory,
+  BSCTEST_CONFIG,
+  EvmFactory,
   EvmService,
   TokenService,
 } from '../src';
@@ -58,7 +59,7 @@ async function main() {
     const to = await factory.getSigner(USER_PRIVATE_KEY).getAddress();
     const token = await treasuryService.encodeWithdrawToken(
       to,
-      id,
+      BigNumber.from(id),
       TRUTH_HOLDER_PRIVATE_KEY,
       amountToDeposit,
       deadline,

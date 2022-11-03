@@ -165,7 +165,7 @@ export class TreasuryService {
    */
   async encodeWithdrawToken(
     to: string,
-    id: number,
+    id: ethers.BigNumber,
     truthHolder: Signer | string,
     amount: BigDecimal,
     deadline: number,
@@ -185,8 +185,6 @@ export class TreasuryService {
     const encoding = 'base64';
     const messageEnc = Buffer.from(message).toString(encoding);
     const signatureEnc = Buffer.from(signature).toString(encoding);
-    return Buffer.from(`${messageEnc}.${signatureEnc}`).toString(
-      encoding,
-    );
+    return Buffer.from(`${messageEnc}.${signatureEnc}`).toString(encoding);
   }
 }

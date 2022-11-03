@@ -1,6 +1,6 @@
 import * as ethers from 'ethers';
 import { BigDecimal } from '../utils/bigdecimal';
-import { DexFactoryABI, DexRouter02ABI, ERC20ABI, ProxyUtilsABI } from '../abis';
+import {DexFactoryABI, DexRouter02ABI, ERC20ABI, ProxyUtilsABI, WETHABI} from '../abis';
 import { EventEmitter } from 'events';
 import { EvmFactory } from './evm.factory';
 import { Config } from '../config';
@@ -57,16 +57,29 @@ export class ProxyUtilsService {
     this.logger.log('info', `doBatchSwapTokensForETH: ${amountsIn} ${amountOutMins} ${paths} ${slippage} ${tos} ${deadlineDelta}`);
     const signer = this.factory.getSigner(signerOrPrivateKey);
 
+    const WETHIndexPath = paths.findIndex((path) => path.some((address) => address === this.config.addresses.tokens.WETH));
+    const WETHAmount = amountsIn[WETHIndexPath];
+    console.log(WETHIndexPath)
+    if (WETHIndexPath !== -1) {
+      paths = paths.filter((_, index) => index !== WETHIndexPath);
+      amountsIn = amountsIn.filter((_, index) => index !== WETHIndexPath);
+      amountOutMins = amountOutMins.filter((_, index) => index !== WETHIndexPath);
+    }
+
+    console.log(paths)
     const {
       amountsInBigNumber,
       amountsOutBigNumber,
       toList,
       deadlines,
     } = await this.prepareForSwap(signer, amountsIn, amountOutMins, paths, slippage, deadlineDelta, tos);
-
     const proxyUtilsContract = this.factory.getContract(this.config.addresses.proxyUtils, ProxyUtilsABI).connect(signer);
     const tx = await proxyUtilsContract.batchSwapTokensForETH(amountsInBigNumber, amountsOutBigNumber, paths, toList, deadlines);
     const result = await tx.wait();
+
+    const WETHContract = this.factory.getContract(this.config.addresses.tokens.WETH, WETHABI).connect(signer);
+    const WETHTx = await WETHContract.withdraw(WETHAmount.toBigNumber(18))
+    await WETHTx.wait();
 
     this.logger.log('info', `doBatchSwapTokensForETH: BATCH SWAP EXECUTED}`);
     return result;

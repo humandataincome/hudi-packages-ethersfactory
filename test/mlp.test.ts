@@ -5,7 +5,7 @@ import Decimal from "decimal.js";
 
 const isTestnet     = false;
 const CONFIG        = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
-const PRIVATE_KEY   = isTestnet ? 'db2da6bdbdb8ecb88532cde7c3a1089cfd2b744a3db7ab2678f03bde6b29ddef' : '0xf6f22a1637ed44cbbfda66aaa15d471bddb2703613749683e3971f14e4416b86';
+const PRIVATE_KEY   = isTestnet ? '' : '';
 
 async function main() {
 

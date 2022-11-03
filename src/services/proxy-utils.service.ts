@@ -59,14 +59,13 @@ export class ProxyUtilsService {
 
     const WETHIndexPath = paths.findIndex((path) => path.some((address) => address === this.config.addresses.tokens.WETH));
     const WETHAmount = amountsIn[WETHIndexPath];
-    console.log(WETHIndexPath)
+
     if (WETHIndexPath !== -1) {
       paths = paths.filter((_, index) => index !== WETHIndexPath);
       amountsIn = amountsIn.filter((_, index) => index !== WETHIndexPath);
       amountOutMins = amountOutMins.filter((_, index) => index !== WETHIndexPath);
     }
 
-    console.log(paths)
     const {
       amountsInBigNumber,
       amountsOutBigNumber,

@@ -1,11 +1,12 @@
 import * as ethers from 'ethers';
 import { BigDecimal } from '../utils/bigdecimal';
-import { DexFactoryABI, DexRouter02ABI, ERC20ABI, ProxyUtilsABI } from '../abis';
+import {DexFactoryABI, DexRouter02ABI, ERC20ABI, ProxyUtilsABI, WETHABI} from '../abis';
 import { EventEmitter } from 'events';
 import { EvmFactory } from './evm.factory';
 import { Config } from '../config';
 import { Signer } from '@ethersproject/abstract-signer';
 import Logger from '../utils/logger';
+import {TokenService} from "./token.service";
 
 /**
  * This util class is intended to contains all required function to
@@ -17,10 +18,12 @@ export class ProxyUtilsService {
   private logger = new Logger(ProxyUtilsService.name);
   private config: Config;
   private factory: EvmFactory;
+  private tokenService: TokenService;
 
   constructor(config: Config) {
     this.config = config;
     this.factory = new EvmFactory(config);
+    this.tokenService = new TokenService(config);
   }
 
   public async doBatchTransferToken(signerOrPrivateKey: Signer | string, tokenAddresses: string | string[], addresses: string[], amounts: BigDecimal[]): Promise<string> {
@@ -57,6 +60,20 @@ export class ProxyUtilsService {
     this.logger.log('info', `doBatchSwapTokensForETH: ${amountsIn} ${amountOutMins} ${paths} ${slippage} ${tos} ${deadlineDelta}`);
     const signer = this.factory.getSigner(signerOrPrivateKey);
 
+    const wethIndexPath = paths.findIndex((path) => path.some(
+      (address) => address === this.config.addresses.tokens.WETH
+    ));
+    const amountToUnWrap: BigDecimal | undefined = amountsIn[wethIndexPath];
+
+    if (wethIndexPath !== -1) {
+      const filterByIndex = (_: unknown, index: number) => index !== wethIndexPath;
+      paths = paths.filter(filterByIndex);
+      amountsIn = amountsIn.filter(filterByIndex);
+      amountOutMins = amountOutMins.filter(filterByIndex);
+      slippage = slippage.filter(filterByIndex);
+      tos = tos?.filter(filterByIndex);
+    }
+
     const {
       amountsInBigNumber,
       amountsOutBigNumber,
@@ -68,6 +85,10 @@ export class ProxyUtilsService {
     const tx = await proxyUtilsContract.batchSwapTokensForETH(amountsInBigNumber, amountsOutBigNumber, paths, toList, deadlines);
     const result = await tx.wait();
 
+    if (amountToUnWrap) {
+      await this.tokenService.unwrapWETH(signer, amountToUnWrap);
+    }
+
     this.logger.log('info', `doBatchSwapTokensForETH: BATCH SWAP EXECUTED}`);
     return result;
   }
@@ -76,6 +97,21 @@ export class ProxyUtilsService {
     this.logger.log('info', `doBatchSwapETHForTokens: ${amountsIn} ${amountOutMins} ${paths} ${slippage} ${tos} ${deadlineDelta}`);
 
     const signer = this.factory.getSigner(signerOrPrivateKey);
+
+
+    const ethIndexPath = paths.findIndex((path) => path.some(
+      (address) => address === this.config.addresses.tokens.ETH
+    ));
+    const amountToWrap: BigDecimal | undefined = amountsIn[ethIndexPath];
+
+    if (ethIndexPath !== -1) {
+      const filterByIndex = (_: unknown, index: number) => index !== ethIndexPath;
+      paths = paths.filter(filterByIndex);
+      amountsIn = amountsIn.filter(filterByIndex);
+      amountOutMins = amountOutMins.filter(filterByIndex);
+      slippage = slippage.filter(filterByIndex);
+      tos = tos?.filter(filterByIndex);
+    }
 
     const {
       amountsInBigNumber,
@@ -87,6 +123,10 @@ export class ProxyUtilsService {
     const proxyUtilsContract = this.factory.getContract(this.config.addresses.proxyUtils, ProxyUtilsABI).connect(signer);
     const tx = await proxyUtilsContract.batchSwapETHForTokens(amountsInBigNumber, amountsOutBigNumber, paths, toList, deadlines);
     const result = await tx.wait();
+
+    if (amountToWrap) {
+      await this.tokenService.wrapETH(signer, amountToWrap);
+    }
 
     this.logger.log('info', `doBatchSwapETHForTokens: BATCH SWAP EXECUTED}`);
     return result;

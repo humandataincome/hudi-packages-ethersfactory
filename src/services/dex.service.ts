@@ -140,15 +140,17 @@ export class DexService {
   }
 
   public async getSwapAmountOut(inputTokenAddress: string, outputTokenAddress: string, amountIn: BigDecimal): Promise<BigDecimal> {
+    const addresses = [inputTokenAddress, this.config.addresses.tokens.WETH, outputTokenAddress].filter((e, i, a) => a.indexOf(e) === i);
+    if (addresses.every((address) => address === this.config.addresses.tokens.WETH)) {
+      return amountIn;
+    }
+
     const dexRouterContract = this.factory.getContract(this.config.addresses.dexRouter, DexRouter02ABI);
     const inputTokenContract = this.factory.getContract(inputTokenAddress, ERC20ABI);
     const inputTokenDecimals = await inputTokenContract.decimals();
     const outputTokenContract = this.factory.getContract(outputTokenAddress, ERC20ABI);
     const outputTokenDecimals = await outputTokenContract.decimals();
-    const dexSwapAmountsOut = await dexRouterContract.getAmountsOut(
-      amountIn.toBigNumber(inputTokenDecimals),
-      [inputTokenAddress, this.config.addresses.tokens.WETH, outputTokenAddress].filter((e, i, a) => a.indexOf(e) === i),
-    );
+    const dexSwapAmountsOut = await dexRouterContract.getAmountsOut(amountIn.toBigNumber(inputTokenDecimals), addresses,);
     return BigDecimal.fromBigNumber([...dexSwapAmountsOut].pop(), outputTokenDecimals);
   }
 

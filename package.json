@@ -32,6 +32,7 @@
     "test:staking": "ts-node test/staking.test.ts",
     "test:lp-token": "ts-node test/lp-token.test.ts",
     "test:vesting": "ts-node test/vesting.test.ts",
+    "test:treasury": "ts-node test/treasury.test.ts",
     "prepublish": "npm run build"
   },
   "devDependencies": {

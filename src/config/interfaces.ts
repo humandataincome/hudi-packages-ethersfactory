@@ -26,6 +26,7 @@ export interface Config {
     staking: string;
     stakingLPToken: string;
     vesting: string;
+    treasury: string;
   };
   jsonRpcUrl: string;
   explorerUrl: string;

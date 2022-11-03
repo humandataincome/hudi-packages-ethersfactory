@@ -9,3 +9,4 @@ export * from './mlp.abi';
 export * from './pancakeswap-locker.abi';
 export * from './staking.abi';
 export * from './vesting.abi';
+export * from './treasury.abi';

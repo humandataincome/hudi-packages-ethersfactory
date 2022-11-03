@@ -1,5 +1,5 @@
 import { Config } from '../config';
-import { ERC20ABI } from '../abis';
+import {ERC20ABI, ProxyUtilsABI, WETHABI} from '../abis';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { BigDecimal } from '../utils/bigdecimal';
 import { Signer } from '@ethersproject/abstract-signer';
@@ -105,6 +105,22 @@ export class TokenService {
   public async getTotalSupply(tokenAddress: string): Promise<BigDecimal> {
     const tokenContract = this.factory.getContract(tokenAddress, ERC20ABI);
     return BigDecimal.fromBigNumber(await tokenContract.totalSupply(), 18);
+  }
+
+  public async unwrapWETH(signerOrPrivateKey: Signer | string, amount: BigDecimal) {
+    const signer = this.factory.getSigner(signerOrPrivateKey);
+
+    const contract = this.factory.getContract(this.config.addresses.tokens.WETH, WETHABI).connect(signer);
+    const tx = await contract.withdraw(amount.toBigNumber(18))
+    return await tx.wait();
+  }
+
+  public async wrapETH(signerOrPrivateKey: Signer | string, amount: BigDecimal) {
+    const signer = this.factory.getSigner(signerOrPrivateKey);
+
+    const contract = this.factory.getContract(this.config.addresses.tokens.WETH, WETHABI).connect(signer);
+    const tx = await contract.deposit({ value: amount.toBigNumber(18) })
+    return await tx.wait();
   }
 
   public removeAllListeners(): void {

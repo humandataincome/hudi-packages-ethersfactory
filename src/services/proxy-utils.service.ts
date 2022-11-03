@@ -6,6 +6,7 @@ import { EvmFactory } from './evm.factory';
 import { Config } from '../config';
 import { Signer } from '@ethersproject/abstract-signer';
 import Logger from '../utils/logger';
+import {TokenService} from "./token.service";
 
 /**
  * This util class is intended to contains all required function to
@@ -17,10 +18,12 @@ export class ProxyUtilsService {
   private logger = new Logger(ProxyUtilsService.name);
   private config: Config;
   private factory: EvmFactory;
+  private tokenService: TokenService;
 
   constructor(config: Config) {
     this.config = config;
     this.factory = new EvmFactory(config);
+    this.tokenService = new TokenService(config);
   }
 
   public async doBatchTransferToken(signerOrPrivateKey: Signer | string, tokenAddresses: string | string[], addresses: string[], amounts: BigDecimal[]): Promise<string> {
@@ -57,13 +60,17 @@ export class ProxyUtilsService {
     this.logger.log('info', `doBatchSwapTokensForETH: ${amountsIn} ${amountOutMins} ${paths} ${slippage} ${tos} ${deadlineDelta}`);
     const signer = this.factory.getSigner(signerOrPrivateKey);
 
-    const WETHIndexPath = paths.findIndex((path) => path.some((address) => address === this.config.addresses.tokens.WETH));
-    const WETHAmount = amountsIn[WETHIndexPath];
+    const wethIndexPath = paths.findIndex((path) => path.some((address) => address === this.config.addresses.tokens.WETH));
+    let wethAmount: BigDecimal | null = null;
 
-    if (WETHIndexPath !== -1) {
-      paths = paths.filter((_, index) => index !== WETHIndexPath);
-      amountsIn = amountsIn.filter((_, index) => index !== WETHIndexPath);
-      amountOutMins = amountOutMins.filter((_, index) => index !== WETHIndexPath);
+    if (wethIndexPath !== -1) {
+      wethAmount = amountsIn[wethIndexPath];
+
+      paths = paths.filter((_, index) => index !== wethIndexPath);
+      amountsIn = amountsIn.filter((_, index) => index !== wethIndexPath);
+      amountOutMins = amountOutMins.filter((_, index) => index !== wethIndexPath);
+      slippage = slippage.filter((_, index) => index !== wethIndexPath);
+      tos = tos?.filter((_, index) => index !== wethIndexPath);
     }
 
     const {
@@ -76,9 +83,9 @@ export class ProxyUtilsService {
     const tx = await proxyUtilsContract.batchSwapTokensForETH(amountsInBigNumber, amountsOutBigNumber, paths, toList, deadlines);
     const result = await tx.wait();
 
-    const WETHContract = this.factory.getContract(this.config.addresses.tokens.WETH, WETHABI).connect(signer);
-    const WETHTx = await WETHContract.withdraw(WETHAmount.toBigNumber(18))
-    await WETHTx.wait();
+    if (wethAmount) {
+      await this.tokenService.unwrapWETH(signer, wethAmount);
+    }
 
     this.logger.log('info', `doBatchSwapTokensForETH: BATCH SWAP EXECUTED}`);
     return result;

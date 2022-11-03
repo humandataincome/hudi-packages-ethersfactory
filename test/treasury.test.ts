@@ -3,6 +3,7 @@ import {
   BigDecimal,
   BSC_CONFIG,
   BSCTEST_CONFIG,
+  EvmFactory,
   EvmService,
   TokenService,
 } from '../src';
@@ -54,8 +55,10 @@ async function main() {
     // PREPARE SIGNE MESSAGE TO PASS TO THE CONTRACT
     const id = 4;
     const deadline = Math.floor((Date.now() + 86400000) / 1000); //ADD 1 DAY
+    const factory = new EvmFactory(CONFIG);
+    const to = await factory.getSigner(USER_PRIVATE_KEY).getAddress();
     const token = await treasuryService.encodeWithdrawToken(
-      USER_PRIVATE_KEY,
+      to,
       BigNumber.from(id),
       TRUTH_HOLDER_PRIVATE_KEY,
       amountToDeposit,

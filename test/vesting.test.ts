@@ -10,7 +10,7 @@ const DESTINATION_WALLET_ADDRESS = '';
 
 async function main() {
   try {
-    const vestingService = new VestingService(CONFIG, CONFIG.addresses.vesting);
+    const vestingService = new VestingService(CONFIG);
 
     // CREATE VESTING
     const totalLockedValue = new BigDecimal(

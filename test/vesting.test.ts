@@ -10,7 +10,7 @@ const DESTINATION_WALLET_ADDRESS = '';
 
 async function main() {
   try {
-    const vestingService = new VestingService(CONFIG, CONFIG.addresses.vesting);
+    const vestingService = new VestingService(CONFIG);
 
     // CREATE VESTING
     const totalLockedValue = new BigDecimal(
@@ -45,7 +45,7 @@ async function main() {
     console.log('vesting', vesting);
 
     // GET THE CLAIMABLE AMOUNT
-    const amount = await vestingService.getClaimableAmount(
+    const amount = await vestingService.claimVesting(
       CONTRACT_OWNER_PRIVATE_KEY,
       vestingIds[0],
     );

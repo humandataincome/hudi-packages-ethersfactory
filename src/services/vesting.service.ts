@@ -19,17 +19,17 @@ export class VestingService {
   private logger = new Logger(VestingService.name);
   private config: Config;
   private factory: EvmFactory;
-  vestingContractAddress: string;
+  // vestingContractAddress: string;
 
-  constructor(config: Config, vestingContractAddress: string) {
+  constructor(config: Config) {
     this.config = config;
     this.factory = new EvmFactory(config);
-    this.vestingContractAddress = vestingContractAddress;
+    // this.vestingContractAddress = config.addresses.vesting;
   }
   /**
    *
    * @param ownerSigner the signer that will handle the vesting
-   * @param destinationWalletAddress the wallet deposit address of the vetsing
+   * @param destinationWalletAddress the wallet deposit address of the vesting
    * @param totalLockedValue the value to lock
    * @param releaseValue the value per time that will be released
    * @param releasePeriod the amount of the release days in milliseconds
@@ -56,7 +56,7 @@ export class VestingService {
 
     const owner = this.factory.getSigner(ownerSigner);
     const vestingContract = this.factory
-      .getContract(this.vestingContractAddress, VestingABI)
+      .getContract(this.config.addresses.vesting, VestingABI)
       .connect(owner);
 
     const vestingTokenAddress = this.config.addresses.tokens.HUDI;
@@ -79,7 +79,7 @@ export class VestingService {
     // APPROVE THE CONTRACT TO SPEND VESTING TOKEN
     const allowance = await vestingToken.allowance(
       await owner.getAddress(),
-      this.vestingContractAddress,
+      this.config.addresses.vesting,
     );
     this.logger.log(
       'debug',
@@ -93,7 +93,7 @@ export class VestingService {
       await (
         await vestingToken
           .connect(owner)
-          .approve(this.vestingContractAddress, ethers.constants.MaxUint256)
+          .approve(this.config.addresses.vesting, ethers.constants.MaxUint256)
       ).wait();
       this.logger.log('debug', `CONTRACT APPROVED TO SPEND VESTING TOKEN`);
     }
@@ -127,7 +127,7 @@ export class VestingService {
     try {
       const signer = this.factory.getSigner(signerOrPrivateKey);
       const vestingContract = this.factory
-        .getContract(this.vestingContractAddress, VestingABI)
+        .getContract(this.config.addresses.vesting, VestingABI)
         .connect(signer);
       return await vestingContract.getVestingIds();
     } catch (err) {
@@ -149,7 +149,7 @@ export class VestingService {
     try {
       const signer = this.factory.getSigner(signerOrPrivateKey);
       const vestingContract = this.factory
-        .getContract(this.vestingContractAddress, VestingABI)
+        .getContract(this.config.addresses.vesting, VestingABI)
         .connect(signer);
       return await vestingContract.getVesting(vestingId);
     } catch (err) {
@@ -164,14 +164,14 @@ export class VestingService {
    * @param vestingId // the id of the vesting
    * @returns the amount of the next claim
    */
-  async getClaimableAmount(
+  async claimVesting(
     signerOrPrivateKey: Signer | string,
     vestingId: string,
   ): Promise<BigDecimal> {
     try {
       const signer = this.factory.getSigner(signerOrPrivateKey);
       const vestingContract = this.factory
-        .getContract(this.vestingContractAddress, VestingABI)
+        .getContract(this.config.addresses.vesting, VestingABI)
         .connect(signer);
       const amount = await vestingContract.getClaimableAmount(vestingId);
       return BigDecimal.fromBigNumber(amount, 18);

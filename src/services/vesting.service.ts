@@ -12,7 +12,7 @@ export type Vesting = {
   releaseValue: BigDecimal;
   releasePeriod: number; // days in milliseconds
   startTimestamp: number; // timestamp in milliseconds
-  cliffPeriod: number; // days in millisecondons
+  cliffPeriod: number; // days in milliseconds
 };
 
 export class VestingService {

@@ -1,6 +1,6 @@
 {
   "name": "@humandataincome/ethersfactory",
-  "version": "1.5.3",
+  "version": "1.5.5",
   "description": "A comprehensive collection of useful tools to interact with DeFi apps",
   "main": "build/index.js",
   "types": "build/index.d.ts",

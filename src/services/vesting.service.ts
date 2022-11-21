@@ -5,14 +5,17 @@ import { Signer } from '@ethersproject/abstract-signer';
 import { EvmFactory } from './evm.factory';
 import Logger from '../utils/logger';
 import * as ethers from 'ethers';
+import {BigNumber} from "ethers";
 
 export type Vesting = {
+  id: string;
   totalLockedValue: BigDecimal;
   totalReleasedValue: BigDecimal;
   releaseValue: BigDecimal;
   releasePeriod: number; // days in milliseconds
   startTimestamp: number; // timestamp in milliseconds
   cliffPeriod: number; // days in milliseconds
+  claimableValue?: BigDecimal;
 };
 
 export class VestingService {
@@ -151,20 +154,28 @@ export class VestingService {
       const vestingContract = this.factory
         .getContract(this.config.addresses.vesting, VestingABI)
         .connect(signer);
-      return await vestingContract.getVesting(vestingId);
+      const vesting =  await vestingContract.getVesting(vestingId);
+      return {
+        id: vestingId,
+        totalLockedValue: BigDecimal.fromBigNumber(vesting.totalLockedValue, 18),
+        totalReleasedValue: BigDecimal.fromBigNumber(vesting.totalReleasedValue, 18),
+        releaseValue: BigDecimal.fromBigNumber(vesting.releaseValue, 18),
+        releasePeriod: (vesting.releasePeriod as BigNumber).toNumber(), // days in milliseconds
+        startTimestamp: (vesting.startTimestamp as BigNumber).toNumber(), // timestamp in milliseconds
+        cliffPeriod: (vesting.cliffPeriod as BigNumber).toNumber(), // days in milliseconds
+      } as Vesting
     } catch (err) {
       this.logger.log('debug', `getVesting ERROR: ${err}`);
       throw new Error('Server Error');
     }
   }
-
   /**
    * returns the amount that the caller can claim at the exact moment
    * @param signerOrPrivateKey the signer for the contact call
    * @param vestingId // the id of the vesting
    * @returns the amount of the next claim
    */
-  async claimVesting(
+  async getClaimableAmount(
     signerOrPrivateKey: Signer | string,
     vestingId: string,
   ): Promise<BigDecimal> {
@@ -175,6 +186,26 @@ export class VestingService {
         .connect(signer);
       const amount = await vestingContract.getClaimableAmount(vestingId);
       return BigDecimal.fromBigNumber(amount, 18);
+    } catch (err) {
+      this.logger.log('debug', `getClaimableAmount ERROR: ${err}`);
+      throw new Error('Server Error');
+    }
+  }
+  /**
+   * function to claim the given vesting
+   * @param signerOrPrivateKey the signer for the contact call
+   * @param vestingId // the id of the vesting
+   */
+  async claimVesting(
+    signerOrPrivateKey: Signer | string,
+    vestingId: string,
+  ): Promise<void> {
+    try {
+      const signer = this.factory.getSigner(signerOrPrivateKey);
+      const vestingContract = this.factory
+        .getContract(this.config.addresses.vesting, VestingABI)
+        .connect(signer);
+      return await vestingContract.transferClaimableAmount(vestingId);
     } catch (err) {
       this.logger.log('debug', `getClaimableAmount ERROR: ${err}`);
       throw new Error('Server Error');

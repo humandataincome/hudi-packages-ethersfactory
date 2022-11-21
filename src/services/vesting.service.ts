@@ -6,13 +6,13 @@ import { EvmFactory } from './evm.factory';
 import Logger from '../utils/logger';
 import * as ethers from 'ethers';
 
-type Vesting = {
-  totalLockedValue: number;
-  totalReleasedValue: number;
-  releaseValue: number;
+export type Vesting = {
+  totalLockedValue: BigDecimal;
+  totalReleasedValue: BigDecimal;
+  releaseValue: BigDecimal;
   releasePeriod: number; // days in milliseconds
   startTimestamp: number; // timestamp in milliseconds
-  cliffPeriod: number; // days in millisecondss
+  cliffPeriod: number; // days in milliseconds
 };
 
 export class VestingService {

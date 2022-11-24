@@ -9,13 +9,14 @@ import {BigNumber} from "ethers";
 
 export type Vesting = {
   id: string;
-  totalLockedValue: BigDecimal;
-  totalReleasedValue: BigDecimal;
-  releaseValue: BigDecimal;
-  releasePeriod: number; // days in milliseconds
-  startTimestamp: number; // timestamp in milliseconds
-  cliffPeriod: number; // days in milliseconds
-  claimableValue?: BigDecimal;
+  totalLockedValue: BigDecimal; // original value locked at the beginning (creation of the vesting)
+  totalReleasedValue: BigDecimal; // released value until now
+  releaseValue: BigDecimal; // amount to release every release period
+  releasePeriod: number; // frequency of the release (ex. You can claim x HUDI every releasePeriod) - timestamp in milliseconds
+  startTimestamp: number; // timestamp creation of the vesting - timestamp in milliseconds
+  cliffPeriod: number; // offset time before the first release period start - timestamp milliseconds
+  claimableValue?: BigDecimal; // value claimable at this instant moment
+  nextClaim?: number; // timestamp of next available claim - timestamp milliseconds
 };
 
 export class VestingService {

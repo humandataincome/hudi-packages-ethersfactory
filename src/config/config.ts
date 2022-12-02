@@ -20,7 +20,7 @@ export const BSC_CONFIG: Config = {
     staking: '0x8f82FDFBE3fa9746a6854d7dbD7dFAAd49FA1E91',
     stakingLPToken: '0x60fC0BF9B2d46396b82aeB996a32B1520b200AF1',
     vesting: '',
-    treasury: '',
+    treasury: '0x4fD3CcbC8021c78e98a837BaEf4CA8669D6030EC',
   },
   jsonRpcUrl: 'https://bsc-dataseed.binance.org',
   explorerUrl: 'https://bscscan.com',

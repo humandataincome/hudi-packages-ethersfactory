@@ -127,13 +127,16 @@ export class VestingService {
    * @param signerOrPrivateKey the signer for the contact call
    * @returns an array of vestingID
    */
-  async getVestingIds(signerOrPrivateKey: Signer | string): Promise<string[]> {
+  async getVestingIds(
+    signerOrPrivateKey: Signer | string,
+    destinationWallet: string,
+  ): Promise<string[]> {
     try {
       const signer = this.factory.getSigner(signerOrPrivateKey);
       const vestingContract = this.factory
         .getContract(this.config.addresses.vesting, VestingABI)
         .connect(signer);
-      return await vestingContract.getVestingIds();
+      return await vestingContract.getVestingIds(destinationWallet);
     } catch (err) {
       this.logger.log('debug', `getVestingIds ERROR: ${err}`);
       throw new Error('Server Error');

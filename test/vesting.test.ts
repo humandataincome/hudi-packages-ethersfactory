@@ -5,8 +5,8 @@ import { VestingService } from '../src';
 
 const isTestnet = true;
 const CONFIG = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
-const VESTING_CREATOR_PRIVATE_KEY = isTestnet ? '' : '';
 
+const VESTING_CREATOR_PRIVATE_KEY = isTestnet ? '' : '';
 const DESTINATION_WALLET_ADDRESS = '';
 const DESTINATION_WALLET_PRIVATE_KEY = isTestnet ? '' : '';
 
@@ -36,6 +36,7 @@ async function main() {
     // GET THE ID OF THE CREATED VESTING
     const vestingIds = await vestingService.getVestingIds(
       DESTINATION_WALLET_PRIVATE_KEY,
+      DESTINATION_WALLET_ADDRESS,
     );
     console.log('vestingIds', vestingIds);
     const vestingid = vestingIds.length - 1;

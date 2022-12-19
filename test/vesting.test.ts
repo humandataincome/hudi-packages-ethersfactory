@@ -5,8 +5,10 @@ import { VestingService } from '../src';
 
 const isTestnet = true;
 const CONFIG = isTestnet ? BSCTEST_CONFIG : BSC_CONFIG;
-const CONTRACT_OWNER_PRIVATE_KEY = isTestnet ? '' : '';
+
+const VESTING_CREATOR_PRIVATE_KEY = isTestnet ? '' : '';
 const DESTINATION_WALLET_ADDRESS = '';
+const DESTINATION_WALLET_PRIVATE_KEY = isTestnet ? '' : '';
 
 async function main() {
   try {
@@ -19,10 +21,10 @@ async function main() {
     const releaseValue = BigDecimal.fromBigNumber(utils.parseEther('0.1'), 18); // tokens
     const releasePeriod = 2592000000; // 30 days
     const cliffPeriod = 7776000000; // 90 days
-    const startTimestamp = 1672531200000; // Sunday 1 January 2023 00:00:00
+    const startTimestamp = 1609459200000; // 1 January 2022 00:00:00
 
     await vestingService.createVesting(
-      CONTRACT_OWNER_PRIVATE_KEY,
+      VESTING_CREATOR_PRIVATE_KEY,
       DESTINATION_WALLET_ADDRESS,
       totalLockedValue,
       releaseValue,
@@ -33,23 +35,38 @@ async function main() {
 
     // GET THE ID OF THE CREATED VESTING
     const vestingIds = await vestingService.getVestingIds(
-      CONTRACT_OWNER_PRIVATE_KEY,
+      DESTINATION_WALLET_PRIVATE_KEY,
+      DESTINATION_WALLET_ADDRESS,
     );
     console.log('vestingIds', vestingIds);
+    const vestingid = vestingIds.length - 1;
 
     // GET THE CREATED VESTING
     const vesting = await vestingService.getVesting(
-      CONTRACT_OWNER_PRIVATE_KEY,
-      vestingIds[0],
+      DESTINATION_WALLET_PRIVATE_KEY,
+      vestingIds[vestingid],
     );
     console.log('vesting', vesting);
 
     // GET THE CLAIMABLE AMOUNT
-    const amount = await vestingService.claimVesting(
-      CONTRACT_OWNER_PRIVATE_KEY,
-      vestingIds[0],
+    const amount = await vestingService.getClaimableAmount(
+      DESTINATION_WALLET_PRIVATE_KEY,
+      vestingIds[vestingid],
     );
+
     console.log('claimableAmount', amount);
+
+    if (amount.gt(0)) {
+      // CLAIM THE AMOUNT
+      console.log('START TO CLAIM THE VESTING...');
+      await vestingService.claimVesting(
+        DESTINATION_WALLET_PRIVATE_KEY,
+        vestingIds[vestingid],
+      );
+      console.log('VESTING CLAIMED.');
+    } else {
+      console.log('THIS VESTING IS NOT CLAIMABLE YET');
+    }
 
     process.exit(0);
   } catch (err: any) {

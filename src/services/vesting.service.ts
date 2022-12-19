@@ -5,17 +5,18 @@ import { Signer } from '@ethersproject/abstract-signer';
 import { EvmFactory } from './evm.factory';
 import Logger from '../utils/logger';
 import * as ethers from 'ethers';
-import {BigNumber} from "ethers";
+import { BigNumber } from 'ethers';
 
 export type Vesting = {
   id: string;
-  totalLockedValue: BigDecimal;
-  totalReleasedValue: BigDecimal;
-  releaseValue: BigDecimal;
-  releasePeriod: number; // days in milliseconds
-  startTimestamp: number; // timestamp in milliseconds
-  cliffPeriod: number; // days in milliseconds
-  claimableValue?: BigDecimal;
+  totalLockedValue: BigDecimal; // original value locked at the beginning (creation of the vesting)
+  totalReleasedValue: BigDecimal; // released value until now
+  releaseValue: BigDecimal; // amount to release every release period
+  releasePeriod: number; // frequency of the release (ex. You can claim x HUDI every releasePeriod) - timestamp in milliseconds
+  startTimestamp: number; // timestamp creation of the vesting - timestamp in milliseconds
+  cliffPeriod: number; // offset time before the first release period start - timestamp milliseconds
+  claimableValue?: BigDecimal; // value claimable at this instant moment
+  nextClaim?: number; // timestamp of next available claim - timestamp milliseconds
 };
 
 export class VestingService {
@@ -31,7 +32,7 @@ export class VestingService {
   }
   /**
    *
-   * @param ownerSigner the signer that will handle the vesting
+   * @param signer the signer that will handle the vesting
    * @param destinationWalletAddress the wallet deposit address of the vesting
    * @param totalLockedValue the value to lock
    * @param releaseValue the value per time that will be released
@@ -40,7 +41,7 @@ export class VestingService {
    * @param startTimestamp the start day of the vesting in timestamp format
    */
   async createVesting(
-    ownerSigner: Signer | string,
+    signerOrPrivateKey: Signer | string,
     destinationWalletAddress: string,
     totalLockedValue: BigDecimal,
     releaseValue: BigDecimal,
@@ -57,15 +58,15 @@ export class VestingService {
       `AMOUNT TO DEPOSIT IS: ${totalLockedValue.toString()}`,
     );
 
-    const owner = this.factory.getSigner(ownerSigner);
+    const signer = this.factory.getSigner(signerOrPrivateKey);
     const vestingContract = this.factory
       .getContract(this.config.addresses.vesting, VestingABI)
-      .connect(owner);
+      .connect(signer);
 
     const vestingTokenAddress = this.config.addresses.tokens.HUDI;
     const vestingToken = this.factory
       .getContract(vestingTokenAddress, ERC20ABI)
-      .connect(owner);
+      .connect(signer);
 
     this.logger.log(
       'debug',
@@ -81,7 +82,7 @@ export class VestingService {
 
     // APPROVE THE CONTRACT TO SPEND VESTING TOKEN
     const allowance = await vestingToken.allowance(
-      await owner.getAddress(),
+      await signer.getAddress(),
       this.config.addresses.vesting,
     );
     this.logger.log(
@@ -95,7 +96,7 @@ export class VestingService {
       this.logger.log('debug', `APPROVING ALLOWANCE...`);
       await (
         await vestingToken
-          .connect(owner)
+          .connect(signer)
           .approve(this.config.addresses.vesting, ethers.constants.MaxUint256)
       ).wait();
       this.logger.log('debug', `CONTRACT APPROVED TO SPEND VESTING TOKEN`);
@@ -104,7 +105,7 @@ export class VestingService {
     try {
       this.logger.log('debug', `START TO CREATE VESTING... `);
       const tx = await vestingContract
-        .connect(owner)
+        .connect(signer)
         .createVesting(
           destinationWalletAddress,
           totalLockedValue.toBigNumber(18),
@@ -126,13 +127,16 @@ export class VestingService {
    * @param signerOrPrivateKey the signer for the contact call
    * @returns an array of vestingID
    */
-  async getVestingIds(signerOrPrivateKey: Signer | string): Promise<string[]> {
+  async getVestingIds(
+    signerOrPrivateKey: Signer | string,
+    destinationWallet: string,
+  ): Promise<string[]> {
     try {
       const signer = this.factory.getSigner(signerOrPrivateKey);
       const vestingContract = this.factory
         .getContract(this.config.addresses.vesting, VestingABI)
         .connect(signer);
-      return await vestingContract.getVestingIds();
+      return await vestingContract.getVestingIds(destinationWallet);
     } catch (err) {
       this.logger.log('debug', `getVestingIds ERROR: ${err}`);
       throw new Error('Server Error');
@@ -154,16 +158,22 @@ export class VestingService {
       const vestingContract = this.factory
         .getContract(this.config.addresses.vesting, VestingABI)
         .connect(signer);
-      const vesting =  await vestingContract.getVesting(vestingId);
+      const vesting = await vestingContract.getVesting(vestingId);
       return {
         id: vestingId,
-        totalLockedValue: BigDecimal.fromBigNumber(vesting.totalLockedValue, 18),
-        totalReleasedValue: BigDecimal.fromBigNumber(vesting.totalReleasedValue, 18),
+        totalLockedValue: BigDecimal.fromBigNumber(
+          vesting.totalLockedValue,
+          18,
+        ),
+        totalReleasedValue: BigDecimal.fromBigNumber(
+          vesting.totalReleasedValue,
+          18,
+        ),
         releaseValue: BigDecimal.fromBigNumber(vesting.releaseValue, 18),
         releasePeriod: (vesting.releasePeriod as BigNumber).toNumber(), // days in milliseconds
         startTimestamp: (vesting.startTimestamp as BigNumber).toNumber(), // timestamp in milliseconds
         cliffPeriod: (vesting.cliffPeriod as BigNumber).toNumber(), // days in milliseconds
-      } as Vesting
+      } as Vesting;
     } catch (err) {
       this.logger.log('debug', `getVesting ERROR: ${err}`);
       throw new Error('Server Error');

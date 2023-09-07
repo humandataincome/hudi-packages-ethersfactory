@@ -1,5 +1,5 @@
 import { Config } from '../config';
-import {ERC20ABI, ProxyUtilsABI, WETHABI} from '../abis';
+import {ERC20ABI, WETHABI} from '../abis';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { BigDecimal } from '../utils/bigdecimal';
 import { Signer } from '@ethersproject/abstract-signer';
@@ -53,7 +53,13 @@ export class TokenService {
     return await tokenContract.symbol();
   }
 
-  public async doTransfer(signerOrPrivateKey: Signer | string, tokenAddress: string | undefined, toAddress: string, amount?: BigDecimal, includeFee = true): Promise<void> {
+  public async doTransfer(
+    signerOrPrivateKey: Signer | string,
+    tokenAddress: string | undefined,
+    toAddress: string, amount?: BigDecimal,
+    includeFee = true,
+    setGasPrice = false,
+  ): Promise<void> {
     const signer = this.factory.getSigner(signerOrPrivateKey);
     amount = amount ?? await this.getBalance(await signer.getAddress(), tokenAddress);
 
@@ -73,7 +79,13 @@ export class TokenService {
       const tokenContract = this.factory.getContract(tokenAddress, ERC20ABI).connect(signer);
 
       const tokenDecimals = await tokenContract.decimals();
-      const tx = await tokenContract.transfer(toAddress, amount.toBigNumber(tokenDecimals));
+      const gasPrice = await this.factory.provider.getGasPrice();
+
+      const tx = !setGasPrice ?
+        await tokenContract.transfer(toAddress, amount.toBigNumber(tokenDecimals)) :
+        await tokenContract.transfer(toAddress, amount.toBigNumber(tokenDecimals), {
+          gasPrice: gasPrice,
+        });
       await tx.wait();
     }
   }

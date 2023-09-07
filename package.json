@@ -33,6 +33,7 @@
     "test:lp-token": "ts-node test/lp-token.test.ts",
     "test:vesting": "ts-node test/vesting.test.ts",
     "test:treasury": "ts-node test/treasury.test.ts",
+    "test:token": "ts-node test/token-service.test.ts",
     "prepublish": "npm run build"
   },
   "devDependencies": {
@@ -58,7 +59,7 @@
   },
   "dependencies": {
     "decimal.js": "^10.3.1",
-    "ethers": "^5.6.1",
+    "ethers": "^5.7.2",
     "graphql": "^16.3.0",
     "graphql-request": "^4.1.0"
   }

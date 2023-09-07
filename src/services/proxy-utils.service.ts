@@ -1,6 +1,6 @@
 import * as ethers from 'ethers';
 import { BigDecimal } from '../utils/bigdecimal';
-import {DexFactoryABI, DexRouter02ABI, ERC20ABI, ProxyUtilsABI, WETHABI} from '../abis';
+import {DexFactoryABI, DexRouter02ABI, ERC20ABI, ProxyUtilsABI} from '../abis';
 import { EventEmitter } from 'events';
 import { EvmFactory } from './evm.factory';
 import { Config } from '../config';
@@ -26,9 +26,10 @@ export class ProxyUtilsService {
     this.tokenService = new TokenService(config);
   }
 
-  public async doBatchTransferToken(signerOrPrivateKey: Signer | string, tokenAddresses: string | string[], addresses: string[], amounts: BigDecimal[]): Promise<string> {
+  public async doBatchTransferToken(signerOrPrivateKey: Signer | string, tokenAddresses: string | string[], addresses: string[], amounts: BigDecimal[], includeGasPrice = false): Promise<string> {
     this.logger.log('info', `doBatchTransferToken: ${tokenAddresses} ${addresses} ${amounts}`);
     const signer = this.factory.getSigner(signerOrPrivateKey);
+    const gasPrice = await this.factory.provider.getGasPrice();
 
     const uniqueTokenAddresses = typeof tokenAddresses === 'string' ? [tokenAddresses] : [...new Set(tokenAddresses)];
     if (uniqueTokenAddresses.length > 1) //TODO: Support multiple token address thorough decimal cache
@@ -45,11 +46,19 @@ export class ProxyUtilsService {
       throw new Error('Not enough balance');
 
     if ((await tokenContract.allowance(this.config.addresses.proxyUtils, await signer.getAddress())).lt(totalAmount.toBigNumber(tokenDecimal)))
-      await (await tokenContract.approve(this.config.addresses.proxyUtils, ethers.constants.MaxUint256)).wait();
+      includeGasPrice ?
+        await (await tokenContract.approve(this.config.addresses.proxyUtils, ethers.constants.MaxUint256, {
+          gasPrice: gasPrice,
+        })).wait()
+      : await (await tokenContract.approve(this.config.addresses.proxyUtils, ethers.constants.MaxUint256)).wait();
+
 
     const proxyUtilsContract = this.factory.getContract(this.config.addresses.proxyUtils, ProxyUtilsABI).connect(signer);
     const bdAmounts = await Promise.all(amounts.map(async (a) => a.toBigNumber(tokenDecimal)));
-    const tx = await proxyUtilsContract.batchTransferToken(tokenAddress, addresses, bdAmounts);
+    const tx = includeGasPrice
+      ? await proxyUtilsContract.batchTransferToken(tokenAddress, addresses, bdAmounts, {
+        gasPrice: gasPrice,
+      }) : await proxyUtilsContract.batchTransferToken(tokenAddress, addresses, bdAmounts);
     const result = await tx.wait();
 
     this.logger.log('info', `doBatchTransferToken: BATCH TRANSFER EXECUTED}`);

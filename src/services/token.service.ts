@@ -58,7 +58,6 @@ export class TokenService {
     tokenAddress: string | undefined,
     toAddress: string, amount?: BigDecimal,
     includeFee = true,
-    setGasPrice = false,
   ): Promise<void> {
     const signer = this.factory.getSigner(signerOrPrivateKey);
     amount = amount ?? await this.getBalance(await signer.getAddress(), tokenAddress);
@@ -80,8 +79,7 @@ export class TokenService {
 
       const tokenDecimals = await tokenContract.decimals();
       const gasPrice = await this.factory.provider.getGasPrice();
-
-      const tx = !setGasPrice ?
+      const tx = !includeFee ?
         await tokenContract.transfer(toAddress, amount.toBigNumber(tokenDecimals)) :
         await tokenContract.transfer(toAddress, amount.toBigNumber(tokenDecimals), {
           gasPrice: gasPrice,

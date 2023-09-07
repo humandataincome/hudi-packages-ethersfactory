@@ -1,6 +1,6 @@
 {
   "name": "@humandataincome/ethersfactory",
-  "version": "1.5.10",
+  "version": "1.5.11",
   "description": "A comprehensive collection of useful tools to interact with DeFi apps",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -34,6 +34,7 @@
     "test:vesting": "ts-node test/vesting.test.ts",
     "test:treasury": "ts-node test/treasury.test.ts",
     "test:token": "ts-node test/token-service.test.ts",
+    "test:proxy": "ts-node test/proxy.test.ts",
     "prepublish": "npm run build"
   },
   "devDependencies": {

@@ -25,7 +25,7 @@ export const BSC_CONFIG: Config = {
   jsonRpcUrl: 'https://bsc-dataseed.binance.org',
   explorerUrl: 'https://bscscan.com',
   dexSubgraphUrl:
-    'https://bsc.streamingfast.io/subgraphs/name/pancakeswap/exchange-v2',
+    'https://proxy-worker-api.pancakeswap.com/bsc-exchange',
 };
 
 export const ETH_CONFIG1 = (jsonRpcApiKey?: string): Config => {
@@ -85,5 +85,5 @@ export const BSCTEST_CONFIG: Config = {
   jsonRpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
   explorerUrl: 'https://testnet.bscscan.com',
   dexSubgraphUrl:
-    'https://bsc.streamingfast.io/subgraphs/name/pancakeswap/exchange-v2',
+    'https://proxy-worker-api.pancakeswap.com/bsc-exchange',
 };

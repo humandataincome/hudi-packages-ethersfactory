@@ -48,11 +48,7 @@ export class DexInfoService {
       address: pairAddress,
     };
 
-    const headers = {
-      Origin: 'https://pancakeswap.finance',
-    };
-
-    const response: { pairDayDatas: DexInfoPairDayDatas[] } = await request(this.config.dexSubgraphUrl, query, variables, headers);
+    const response: { pairDayDatas: DexInfoPairDayDatas[] } = await request(this.config.dexSubgraphUrl, query, variables);
 
     const data = response.pairDayDatas.map((v: { date: unknown; dailyVolumeUSD: string; reserveUSD: string; reserve0: string; reserve1: string }) => {
       const reserve0 = new BigDecimal(v.reserve0);

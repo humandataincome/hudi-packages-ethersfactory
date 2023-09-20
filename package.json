@@ -1,6 +1,6 @@
 {
   "name": "@humandataincome/ethersfactory",
-  "version": "1.5.13",
+  "version": "1.5.14",
   "description": "A comprehensive collection of useful tools to interact with DeFi apps",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -62,6 +62,6 @@
     "decimal.js": "^10.3.1",
     "ethers": "^5.7.2",
     "graphql": "^16.8.1",
-    "graphql-request": "^6.1.0",
+    "graphql-request": "^6.1.0"
   }
 }

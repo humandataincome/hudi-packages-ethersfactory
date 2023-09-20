@@ -25,8 +25,14 @@ export class DexInfoService {
 
   public async getPairInfo(pairAddress: string, limit = 7, offset = 0): Promise<DexInfoPoolInfo> {
     const query = gql`
-      {
-        pairDayDatas(first: ${limit}, skip: ${offset}, where: {pairAddress: "${pairAddress}"}, orderBy: date, orderDirection: desc) {
+      query pairDayDatas($first: Int!, $skip: Int!, $address: Bytes!) {
+        pairDayDatas(
+          first: $first
+          skip: $skip
+          where: { pairAddress: $address }
+          orderBy: date
+          orderDirection: asc
+        ) {
           date
           dailyVolumeUSD
           reserveUSD
@@ -36,7 +42,13 @@ export class DexInfoService {
       }
     `;
 
-    const response: { pairDayDatas: DexInfoPairDayDatas[] } = await request(this.config.dexSubgraphUrl, query);
+    const variables = {
+      first: limit,
+      skip: offset,
+      address: pairAddress,
+    };
+
+    const response: { pairDayDatas: DexInfoPairDayDatas[] } = await request(this.config.dexSubgraphUrl, query, variables);
 
     const data = response.pairDayDatas.map((v: { date: unknown; dailyVolumeUSD: string; reserveUSD: string; reserve0: string; reserve1: string }) => {
       const reserve0 = new BigDecimal(v.reserve0);

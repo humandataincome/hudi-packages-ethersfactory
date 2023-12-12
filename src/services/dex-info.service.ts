@@ -23,15 +23,14 @@ export class DexInfoService {
     this.factory = new EvmFactory(config);
   }
 
-  public async getPairInfo(pairAddress: string, limit = 7, offset = 0): Promise<DexInfoPoolInfo> {
+  public async getPairInfo(pairAddress: string, startTime: number, offset = 0): Promise<DexInfoPoolInfo> {
     const query = gql`
-      query pairDayDatas($first: Int!, $skip: Int!, $address: Bytes!) {
+      query pairDayDatas($startTime: Int!, $skip: Int!, $address: Bytes!) {
         pairDayDatas(
-          first: $first
           skip: $skip
-          where: { pairAddress: $address }
+          where: { pairAddress: $address, date_gt: $startTime }
           orderBy: date
-          orderDirection: asc
+          orderDirection: desc
         ) {
           date
           dailyVolumeUSD
@@ -43,7 +42,7 @@ export class DexInfoService {
     `;
 
     const variables = {
-      first: limit,
+      startTime: startTime,
       skip: offset,
       address: pairAddress,
     };

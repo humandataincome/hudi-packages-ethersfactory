@@ -64,7 +64,7 @@ export class DexInfoService {
         volumeUSD: new BigDecimal(v.dailyVolumeUSD)
       };
     });
-    const weeklyData = data.slice(0, 7);
+    const weeklyData = data.slice(0, 8);
     const weeklySumVolumeUSD = weeklyData.reduce((a: BigDecimal, c) => a.plus(c.volumeUSD), new BigDecimal(0));
     const weeklyAvgReserveUSD = weeklyData.reduce((a: BigDecimal, c) => a.plus(c.reserveUSD), new BigDecimal(0)).div(data.length);
 
